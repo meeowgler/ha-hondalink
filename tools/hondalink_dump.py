@@ -27,10 +27,10 @@ Usage:
   python3 hondalink_dump.py --integration-dir ... --vin <VIN> --wake
   python3 hondalink_dump.py --integration-dir ... --probe
 
---probe tries 16 read-only endpoints on Honda's servers (GET, plus POST for a few
-reads that refuse GET). None of them is a vehicle command: nothing reaches the car.
-Paths come from the app's tables, but the host, HTTP method and VIN placement are
-guesses, so expect most attempts to fail; probe_summary.txt shows which ones didn't.
+--probe tries 16 read-only endpoints on Honda's servers, using the HTTP method the app
+uses where it is known. None of them is a vehicle command: nothing reaches the car.
+Paths and methods come from the app, but the host and VIN placement are guesses, so
+expect most attempts to fail; probe_summary.txt shows which ones didn't.
 
 Credentials come from HONDALINK_EMAIL / HONDALINK_PASSWORD (and optionally
 HONDALINK_VIN), or you are prompted. The PIN is not needed for these reads.
@@ -48,7 +48,7 @@ import sys
 import types
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 DEFAULT_DIRS = [
     "/config/custom_components/hondalink",  # HA terminal / container
@@ -76,30 +76,38 @@ SAFE_KEYS = {
 }
 VIN_RE = re.compile(r"\b[A-HJ-NPR-Z0-9]{17}\b")
 
-# Read-only endpoints from the HondaLink iOS app (docs/hondalink-protocol/api-map.txt) that
-# could give this integration something new. The app's table doesn't say which host each
-# path lives on, so each is tried on both Honda web-service hosts, with and without the VIN
-# appended. post_ok: also try POST if the server refuses GET (HTTP 405); only set for
-# endpoints whose name says they just read data.
+class Probe(NamedTuple):
+    name: str
+    path: str  # appended to each of PROBE_HOSTS, unless it is a full URL
+    method: str = "GET"  # from the app's operation class (COMGet*/COMPost*), deep-dive.md section 7
+    post_on_405: bool = False  # method unknown: also try POST if the server refuses GET
+    vin_style: str = "path"  # how to add the VIN: "path" (/VIN) or "query" (?vin=VIN)
+
+
+# Read-only endpoints from the HondaLink iOS app (docs/hondalink-protocol/) that could give
+# this integration something new. The app's tables don't pin down which host each path is
+# on, so each is tried on both Honda web-service hosts, with and without the VIN.
 PROBE_HOSTS = ("https://wsc.hondaweb.com", "https://ws.hondaweb.com")
-PROBES: tuple[tuple[str, str, bool], ...] = (
-    # (name, path, post_ok)
-    ("feature_list", "/REST/NGT/FeatureList/1.0/", True),
-    ("feature_list_cbo", "/REST/NGT/CBO/FeatureList/1.0/", True),
-    ("vehicle_entitlement", "/REST/NGT/Enrollment/VehicleEntitlement/2.0", True),
-    ("customer_entitlement", "/REST/NGT/EnrollmentCustomerEntitlement/1.0", True),
-    ("telematics_profile", "/REST/NGT/VTP/telematics/profile", True),
-    ("account_status", "/REST/NGT/CSAccountStatus/1.0", True),
-    ("trip_scores", "/REST/NGT/CVP/TripScores/1.0", True),
-    ("driving_scores", "/REST/NGT/CVP/DrivingScores/1.0", True),
-    ("activity_log", "/REST/NGT/ActivityLog/1.0/", True),
-    ("vehicle_messages", "/REST/NGT/VehicleMessage/Details/1.0/", True),
-    ("vehicle_location", "/REST/NGT/VDS/vehicle/location", True),
-    ("vehicle_status", "/REST/NGT/Vehicle/", False),
-    ("fota_campaigns", "/REST/NGT/FOTAvehiclesGetVincampaigns/1.0", True),
-    ("stolen_vehicle_status", "/REST/NGT/SVLGetStatus/1.0", True),
-    ("parts_health", "/REST/SPT/VehiclePartsHealth/1.0", True),
-    ("garage_devices", "/REST/GDO/devices/1.0", False),
+PROBES: tuple[Probe, ...] = (
+    Probe("feature_list", "/REST/NGT/FeatureList/1.0/"),
+    Probe("feature_list_cbo", "/REST/NGT/CBO/FeatureList/1.0/"),
+    Probe("vehicle_entitlement", "/REST/NGT/Enrollment/VehicleEntitlement/2.0", "POST"),
+    Probe("customer_entitlement", "/REST/NGT/EnrollmentCustomerEntitlement/1.0", "POST"),
+    Probe("telematics_profile", "/REST/NGT/VTP/telematics/profile"),
+    Probe("account_status", "/REST/NGT/CSAccountStatus/1.0"),
+    Probe("trip_scores", "/REST/NGT/CVP/TripScores/1.0"),
+    Probe("driving_scores", "/REST/NGT/CVP/DrivingScores/1.0"),
+    Probe("activity_log", "/REST/NGT/ActivityLog/1.0/"),
+    # Inbox: Maintenance Minder, warning and recall messages (deep-dive.md section 5).
+    Probe("vehicle_messages", "/REST/NGT/VehicleMessage/Details/1.0/"),
+    Probe("vehicle_location", "/REST/NGT/VDS/vehicle/location", post_on_405=True),
+    Probe("fota_campaigns", "/REST/NGT/FOTAvehiclesGetVincampaigns/1.0"),
+    Probe("stolen_vehicle_status", "/REST/NGT/SVLGetStatus/1.0"),
+    Probe("parts_health", "/REST/SPT/VehiclePartsHealth/1.0", post_on_405=True),
+    Probe("garage_devices", "/REST/GDO/devices/1.0"),
+    # Honda's public US recall lookup (service maintenanceRecallUs); no login needed.
+    # GET ?vin= returns recalls_response.Response.Recall (a POST gets no recall data).
+    Probe("recalls", "https://content.services.honda.com/recalls/GetRecalls.ashx", vin_style="query"),
 )
 # Probes whose "name" fields are feature/campaign names, not people, so worth keeping.
 PROBES_KEEP_NAME = {"feature_list", "feature_list_cbo", "vehicle_entitlement", "fota_campaigns"}
@@ -200,13 +208,18 @@ async def probe_endpoints(session, api, vin: str | None, hosts=None, probes=PROB
     found: dict[str, Any] = {}
     raw_text: dict[str, str] = {}
     lines: list[str] = []
-    for name, path, post_ok in probes:
+    for name, path, first_method, post_on_405, vin_style in probes:
         hit = False
-        for host in hosts:
+        for host in ("",) if path.startswith("http") else hosts:
             for suffix in ("", vin) if vin else ("",):
-                url = host + (f"{path.rstrip('/')}/{suffix}" if suffix else path)
+                if not suffix:
+                    url = host + path
+                elif vin_style == "query":
+                    url = f"{host}{path}?vin={suffix}"
+                else:
+                    url = f"{host}{path.rstrip('/')}/{suffix}"
                 shown = url.replace(vin, "{VIN}") if vin else url
-                methods = ["GET"]
+                methods = [first_method]
                 while methods:
                     method = methods.pop(0)
                     await api.async_ensure_login()
@@ -231,7 +244,7 @@ async def probe_endpoints(session, api, vin: str | None, hosts=None, probes=PROB
                         if title:
                             info += f", title={title.group(1).strip()[:60]!r}"
                     lines.append(f"{name:22} {method:4} {shown} -> HTTP {status} {info}")
-                    if status == 405 and method == "GET" and post_ok:
+                    if status == 405 and method == "GET" and post_on_405:
                         methods.append("POST")
                     if 200 <= status < 300 and text:
                         record = {"method": method, "url": shown, "http_status": status, "content_type": ctype}
