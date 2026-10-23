@@ -12,7 +12,12 @@ backend protocol, with an eye toward features the integration does not yet expos
 - `deep-dive.md` — second pass: exact command bodies (inline Swift string recovery),
   command state machine and polling statuses, the remote-climate stack, data models
   from Swift reflection metadata, service→host table, GET/POST catalog.
+  Third pass (§10): `acSetting` wire fields, server vs app status strings,
+  MY21 location / car finder bodies, vehicle-messages inbox, recall GET.
 - `com-classes.txt` — the 171 `COM*` operation classes (class-name prefix = HTTP verb).
+- `bundle/` — catalogs shipped inside the app: `warningLamps.json`,
+  `dashboard.json`, `FeatureFilterMapper.json` (FeatureID → filter group),
+  `FeatureLocalisationMapper.json`.
 
 Method: REA (Ghidra/Hopper) + custom Mach-O parsers for Swift metadata, ObjC runtime,
 dyld chained fixups, and Swift string slots in `__data`. The app's two static tables —
