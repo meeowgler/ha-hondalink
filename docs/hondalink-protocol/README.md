@@ -9,6 +9,10 @@ backend protocol, with an eye toward features the integration does not yet expos
   this repo, and evidence anchors (symbols/addresses).
 - `api-map.txt` — every `apiName → path` pair reconstructed from the app's static
   config dictionaries (~200 endpoints, grouped by path prefix; QA/UAT variants merged).
+- `deep-dive.md` — second pass: exact command bodies (inline Swift string recovery),
+  command state machine and polling statuses, the remote-climate stack, data models
+  from Swift reflection metadata, service→host table, GET/POST catalog.
+- `com-classes.txt` — the 171 `COM*` operation classes (class-name prefix = HTTP verb).
 
 Method: REA (Ghidra/Hopper) + custom Mach-O parsers for Swift metadata, ObjC runtime,
 dyld chained fixups, and Swift string slots in `__data`. The app's two static tables —
