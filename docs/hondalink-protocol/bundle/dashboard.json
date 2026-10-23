@@ -1,0 +1,214 @@
+{
+    "appInfo": {
+        "source": "APP",
+        "brand": "Honda",
+        "country": "US",
+        "driverRole": "primary",
+        "isSignedIn": false,
+        "preferredLanguage": "EN"
+    },
+    "templateLastSyncDate": "2018-04-25 12:59:59.0",
+    "templateVersion": "1.0",
+    "tiles": [
+              {
+              "layout": "cards_layout",
+              "refreshStrategy": "NA",
+              "source": "FL",
+              "tileName": "cards",
+              "tileTitle": "Cards",
+              "displayElements": [
+                                  {
+                                  "code": "recall_notification",
+                                  "desc": "recall_notification_desc",
+                                  "FeatureID": "50035",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "1"
+                                  },
+                                  {
+                                  "code": "remote_charge",
+                                  "desc": "remote_charge_desc",
+                                  "FeatureID": "50030",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "4"
+                                  },
+                                  {
+                                  "code": "remote_dashboard",
+                                  "desc": "remote_dashboard_desc",
+                                  "FeatureID": "50024",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "9"
+                                  },
+                                  {
+                                  "code": "gtc_remote_dashboard",
+                                  "desc": "gtc_remote_dashboard_desc",
+                                  "FeatureID": "50050",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "9"
+                                  },
+                                  {
+                                  "code": "gtc_remote_dashboard",
+                                  "desc": "gtc_remote_dashboard_desc",
+                                  "FeatureID": "50051",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "9"
+                                  },
+                                  {
+                                  "code": "gtc_remote_dashboard",
+                                  "desc": "gtc_remote_dashboard_desc",
+                                  "FeatureID": "50052",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "9"
+                                  },
+                                  {
+                                  "code": "gtc_remote_dashboard",
+                                  "desc": "gtc_remote_dashboard_desc",
+                                  "FeatureID": "50053",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "9"
+                                  },
+                                  {
+                                  "code": "gtc_remote_dashboard",
+                                  "desc": "gtc_remote_dashboard_desc",
+                                  "FeatureID": "50054",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "9"
+                                  },
+                                  {
+                                  "code": "gtc_remote_dashboard",
+                                  "desc": "gtc_remote_dashboard_desc",
+                                  "FeatureID": "50055",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "9"
+                                  },
+                                  {
+                                  "code": "gtc_remote_dashboard",
+                                  "desc": "gtc_remote_dashboard_desc",
+                                  "FeatureID": "50056",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "9"
+                                  },
+                                  {
+                                      "code": "gtc_remote_dashboard",
+                                      "desc": "gtc_remote_dashboard_desc",
+                                      "FeatureID": "50062",
+                                      "Screen": "Card",
+                                      "LayoutOrder": "9"
+                                  },
+                                  {
+                                      "code": "gtc_remote_dashboard",
+                                      "desc": "gtc_remote_dashboard_desc",
+                                      "FeatureID": "50063",
+                                      "Screen": "Card",
+                                      "LayoutOrder": "9"
+                                  },
+                                  {
+                                      "code": "gtc_remote_dashboard",
+                                      "desc": "gtc_remote_dashboard_desc",
+                                      "FeatureID": "50067",
+                                      "Screen": "Card",
+                                      "LayoutOrder": "9"
+                                  },
+                                  {
+                                      "code": "maps",
+                                      "desc": "maps_desc",
+                                      "FeatureID": "50066",
+                                      "Screen": "Card",
+                                      "LayoutOrder": "10"
+                                  },
+                                  {
+                                      "code": "calendar",
+                                      "desc": "calendar_desc",
+                                      "FeatureID": "50065",
+                                      "Screen": "Card",
+                                      "LayoutOrder": "31"
+                                  },
+                                  {
+                                  "code": "tirepressure",
+                                  "desc": "tirepressure_desc",
+                                  "FeatureID": "50025",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "9"
+                                  },
+                                  {
+                                  "code": "door_light_status",
+                                  "desc": "door_light_status_desc",
+                                  "FeatureID": "50026",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "9"
+                                  },                                  
+                                  {
+                                  "code": "service_appointment",
+                                  "desc": "service_appointment_desc",
+                                  "FeatureID": "50003",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "22"
+                                  },
+                                  {
+                                  "code": "remote_software_update_banner",
+                                  "desc": "remote_software_update_desc",
+                                  "FeatureID": "50079",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "1"
+                                  },
+                                  {
+                                  "code": "schedule_climate",
+                                  "desc": "schedule_climate_desc",
+                                  "FeatureID": "50037",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "18"
+                                  },
+                                  {
+                                  "code": "trip_score",
+                                  "desc": "trip_score_desc",
+                                  "FeatureID": "Trip Score",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "27"
+                                  },
+                                  {
+                                  "code": "stolen_vehicle_locator",
+                                  "desc": "stolen_vehicle_locator_desc",
+                                  "FeatureID": "50009",
+                                  "Screen": "Card",
+                                  "LayoutOrder": "10"
+                                  }
+                                  ]
+              },
+              {
+              "layout": "drawer_layout",
+              "refreshStrategy": "NA",
+              "source": "FL",
+              "tileName": "drawer",
+              "tileTitle": "Drawer",
+              "displayElements": [
+                                  {
+                                  "code": "remote_start",
+                                  "desc": "service_appointment_desc",
+                                  "FeatureID": "50037",
+                                  "Screen": "Drawer",
+                                  "LayoutOrder": "1,1"
+                                  },
+                                  {
+                                  "code": "remote_lock_unlock",
+                                  "desc": "remote_lock_unlock_desc",
+                                  "FeatureID": "50029",
+                                  "Screen": "Drawer",
+                                  "LayoutOrder": "1,2"
+                                  },
+                                  {
+                                  "code": "find_my_car",
+                                  "desc": "find_my_car_desc",
+                                  "FeatureID": "50012",
+                                  "Screen": "Drawer",
+                                  "LayoutOrder": "3"
+                                  },
+                                  {
+                                  "code": "remote_climate",
+                                  "desc": "remote_climate_desc",
+                                  "FeatureID": "50011",
+                                  "Screen": "Drawer",
+                                  "LayoutOrder": "2"
+                                  }
+                                  ]
+              }
+              ]
+}

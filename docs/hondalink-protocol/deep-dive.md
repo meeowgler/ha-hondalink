@@ -229,8 +229,88 @@ reissue-by-login flow remains the safe path.
 
 ## 9. Not found in the iOS binary (negative results)
 
-- `resTime`, `resStartCounter`, `lockState`, `openState` — absent everywhere.
+- `resTime`, `resStartCounter`, `lockState`, `openState` — absent from iOS *code*
+  (re-verified with a whole-`__text` MOVZ/MOVK inline-string dataflow scan,
+  `scanall.py`; positive controls in the same scan: `vin` x64, `device` x10,
+  `pin` x4). **Correction:** these are nonetheless real Honda wire fields —
+  they appear in live status replies captured from a 2025 CR-V Hybrid. The iOS
+  app simply never reads them (it uses the DigitalTwin names instead:
+  `doorStatus`, `windowStatus`, etc.). "Absent from iOS code" != "not on the wire".
 - No iOS command class for OnStar climate (`ClimateAsync`, `getClimateStatus`) —
   those apiNames exist for OnStar-equipped models only.
-- FeatureList gating is numeric FeatureIDs, not string names.
+- FeatureList gating is numeric FeatureIDs, not string names — but the
+  number→name mapping ships in the bundle: see `bundle/FeatureFilterMapper.json`
+  (e.g. `50073 -> remoteControls`, `50072 -> security`, `enrollment_required` list).
 - MQTT topic templates are Swift-interpolated, not static strings.
+
+## 10. Third pass (review-driven corrections and new finds)
+
+### 10.1 `acSetting` wire fields (climate inside engine start / schedule)
+
+Inline-string dataflow at `0x10005d028`–`0x10005e430` (decoder with
+`unknown`/`invalid`/`not specified` fallbacks) yields the climate-setting keys:
+
+| key | notes |
+|---|---|
+| `acTempValue` | target cabin temperature value |
+| `acTempUnit` | unit (F/C) |
+| `acDefSet` | defroster setting; observed values `Lo` / `Hi` |
+| `autoOn`, `autoOff` | auto climate on/off |
+| `acTimerStart`, `acTimerCount` | timer start / duration |
+| `acDayOfWeek` | schedule day-of-week |
+
+The same key cluster feeds `climateScheduleSetting` → `/ClimateSetting/1.0`
+(hybrid scheduled climate, `GetUpdateHybridClimateSettingsOperation`). The
+engine-start body's `acSetting` block (builder `0x100dbf614`) carries this
+settings object; exact nesting of value vs unit inside `acSetting` was not
+fully recovered statically.
+
+### 10.2 Command status strings — who is who
+
+- `new, processing, delayStart, engineStarted, done, failed, engineStop,
+  rsuInProgress, turnOnClimate` — app-internal state-machine enum
+  (`NewCIGCommandState` etc.), NOT server strings. Reviewer correct.
+- `IN_PROGRESS` — inline string in the command status handler
+  (`0x100a0af24`); server-side value.
+- `SERVICE_COMPLETED` — cstring `0x1012c0300`, referenced by the function at
+  `0x1000e89d8`, sitting in `__cstring` directly between
+  `SendToCarPollingManager` / `SendToCarCIGPollingManager` class-name strings:
+  it is the polling manager's *server-comparison constant*. Server-side value.
+- Which JSON field carries it in a command-result reply is not statically
+  pinned; needs one live capture (no result-response fixture exists in the repo).
+  If HA's poller sees `SERVICE_COMPLETED`, `api.py` line ~386
+  (`status in ("success","completed","complete","ok")`) misses it — add
+  `service_completed` to the success set. Verify with a capture first.
+
+### 10.3 Car finder / MY21 location
+
+- `COMPostLocationMy21(keys:role:)` — init call site `0x1006ed0b8`; keys built
+  inline: `device`, `pin` (same body as lock/unlock and VehicleLocator).
+- `COMGetLocationMy21(requestId:)` — call site `0x100fc015c`; argument loaded
+  from `cigServiceRequestId`. MY21 location = CIG command + result poll.
+- `COMPostVehicleLocator(keys:role:)` — call site `0x1009a08b8`; same
+  `device`+`pin` body.
+- `role` is a runtime parameter at all three call sites — no static role
+  literal exists for locate (unlike lock's inline `alk`/`dulk`). Probe
+  `/CIG/cfl/async` with no suffix first, then `/alk`.
+
+### 10.4 Vehicle messages inbox
+
+- `COMGetVehicleMessages(vin:)` → GET `/VehicleMessage/Details/1.0/`
+- `COMPostVehicleMessageStatus(keys:countryCode:)` → POST `/VehicleMessage/Status/1.0`
+- Message body fields are parsed generically; Maintenance Minder text arrives
+  here (separate from the `maintenanceMinder` block in dashboard status).
+
+### 10.5 Recall lookup
+
+- App class is `COMPostMaintenanceRecall` (POST), but a live unauthenticated
+  GET `content.services.honda.com/recalls/GetRecalls.ashx?vin=...` returns a
+  structured reply with a recall-campaign count. GET is the working form.
+
+### 10.6 Bundle catalogs (committed)
+
+`bundle/` now contains the app's own catalogs: `warningLamps.json` (id,
+`sabCode`, `englishTitle`), `dashboard.json` (tile → FeatureID),
+`FeatureFilterMapper.json` (FeatureID → filter group),
+`FeatureLocalisationMapper.json` (feature key → localized label key).
+
