@@ -11,6 +11,9 @@ Writes, into ./hondalink_dump_<timestamp>/ :
   profile.json          GET /REST/NGT/myProfile/1.0/{VIN}     (account / subscription profile)
   dashboard.json        POST /REST/NGT/CIG/dbd/latest/{VIN}   (the status data the integration polls)
   wake_result.json      only with --wake (POST /REST/NGT/CIG/dbd/async, asks the car for fresh data)
+  probe_<name>.json     only with --probe: read-only endpoints found in the iOS app (see
+                        docs/hondalink-protocol/) that answered with JSON
+  probe_summary.txt     only with --probe: every URL tried, its HTTP status and what came back
   fields.txt            every leaf field from all of the above as "path = value", easiest to read
   errors.txt            any request that failed, with the error message
 
@@ -22,6 +25,12 @@ Usage:
   pip install aiohttp
   python3 hondalink_dump.py --integration-dir /path/to/hondalink
   python3 hondalink_dump.py --integration-dir ... --vin <VIN> --wake
+  python3 hondalink_dump.py --integration-dir ... --probe
+
+--probe tries 16 read-only endpoints on Honda's servers (GET, plus POST for a few
+reads that refuse GET). None of them is a vehicle command: nothing reaches the car.
+Paths come from the app's tables, but the host, HTTP method and VIN placement are
+guesses, so expect most attempts to fail; probe_summary.txt shows which ones didn't.
 
 Credentials come from HONDALINK_EMAIL / HONDALINK_PASSWORD (and optionally
 HONDALINK_VIN), or you are prompted. The PIN is not needed for these reads.
@@ -67,6 +76,34 @@ SAFE_KEYS = {
 }
 VIN_RE = re.compile(r"\b[A-HJ-NPR-Z0-9]{17}\b")
 
+# Read-only endpoints from the HondaLink iOS app (docs/hondalink-protocol/api-map.txt) that
+# could give this integration something new. The app's table doesn't say which host each
+# path lives on, so each is tried on both Honda web-service hosts, with and without the VIN
+# appended. post_ok: also try POST if the server refuses GET (HTTP 405); only set for
+# endpoints whose name says they just read data.
+PROBE_HOSTS = ("https://wsc.hondaweb.com", "https://ws.hondaweb.com")
+PROBES: tuple[tuple[str, str, bool], ...] = (
+    # (name, path, post_ok)
+    ("feature_list", "/REST/NGT/FeatureList/1.0/", True),
+    ("feature_list_cbo", "/REST/NGT/CBO/FeatureList/1.0/", True),
+    ("vehicle_entitlement", "/REST/NGT/Enrollment/VehicleEntitlement/2.0", True),
+    ("customer_entitlement", "/REST/NGT/EnrollmentCustomerEntitlement/1.0", True),
+    ("telematics_profile", "/REST/NGT/VTP/telematics/profile", True),
+    ("account_status", "/REST/NGT/CSAccountStatus/1.0", True),
+    ("trip_scores", "/REST/NGT/CVP/TripScores/1.0", True),
+    ("driving_scores", "/REST/NGT/CVP/DrivingScores/1.0", True),
+    ("activity_log", "/REST/NGT/ActivityLog/1.0/", True),
+    ("vehicle_messages", "/REST/NGT/VehicleMessage/Details/1.0/", True),
+    ("vehicle_location", "/REST/NGT/VDS/vehicle/location", True),
+    ("vehicle_status", "/REST/NGT/Vehicle/", False),
+    ("fota_campaigns", "/REST/NGT/FOTAvehiclesGetVincampaigns/1.0", True),
+    ("stolen_vehicle_status", "/REST/NGT/SVLGetStatus/1.0", True),
+    ("parts_health", "/REST/SPT/VehiclePartsHealth/1.0", True),
+    ("garage_devices", "/REST/GDO/devices/1.0", False),
+)
+# Probes whose "name" fields are feature/campaign names, not people, so worth keeping.
+PROBES_KEEP_NAME = {"feature_list", "feature_list_cbo", "vehicle_entitlement", "fota_campaigns"}
+
 
 def load_api(integration_dir: Path):
     """Import const.py and api.py as a package WITHOUT running __init__.py.
@@ -103,12 +140,13 @@ def is_secret_key(key: str) -> bool:
     return k in SECRET_KEYS_EXACT or any(part in k for part in SECRET_KEY_PARTS)
 
 
-def redact(value: Any, vins: set[str]) -> Any:
+def redact(value: Any, vins: set[str], keep: frozenset[str] = frozenset()) -> Any:
     if isinstance(value, dict):
-        return {k: ("**REDACTED**" if is_secret_key(str(k)) and v not in (None, "", [], {}) else redact(v, vins))
+        return {k: ("**REDACTED**" if is_secret_key(str(k)) and str(k) not in keep and v not in (None, "", [], {})
+                    else redact(v, vins, keep))
                 for k, v in value.items()}
     if isinstance(value, list):
-        return [redact(v, vins) for v in value]
+        return [redact(v, vins, keep) for v in value]
     if isinstance(value, str):
         out = value
         for vin in vins:
@@ -139,6 +177,81 @@ def write_json(path: Path, data: Any) -> None:
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False, sort_keys=False) + "\n", encoding="utf-8")
 
 
+def _body_summary(payload: Any) -> str:
+    if isinstance(payload, dict):
+        status = payload.get("status") or (payload.get("Header") or {}).get("ErrorCode")
+        keys = ", ".join(list(payload)[:8])
+        return f"status={status!r} keys=[{keys}]" if status is not None else f"keys=[{keys}]"
+    if isinstance(payload, list):
+        return f"list of {len(payload)}"
+    return type(payload).__name__
+
+
+def _failed(payload: Any) -> bool:
+    if not isinstance(payload, dict):
+        return False
+    status = str(payload.get("status") or "").lower()
+    return status in ("failure", "failed", "error") or bool((payload.get("Header") or {}).get("ErrorCode"))
+
+
+async def probe_endpoints(session, api, vin: str | None, hosts=None, probes=PROBES, delay: float = 0.3):
+    """Try each read-only endpoint; return ({name: response}, [summary lines], {name: raw text})."""
+    hosts = hosts or PROBE_HOSTS
+    found: dict[str, Any] = {}
+    raw_text: dict[str, str] = {}
+    lines: list[str] = []
+    for name, path, post_ok in probes:
+        hit = False
+        for host in hosts:
+            for suffix in ("", vin) if vin else ("",):
+                url = host + (f"{path.rstrip('/')}/{suffix}" if suffix else path)
+                shown = url.replace(vin, "{VIN}") if vin else url
+                methods = ["GET"]
+                while methods:
+                    method = methods.pop(0)
+                    await api.async_ensure_login()
+                    body = {"device": vin, "vin": vin} if method == "POST" and vin else None
+                    try:
+                        async with session.request(method, url, headers=api._api_headers(), json=body) as resp:
+                            text = await resp.text()
+                            ctype = resp.headers.get("Content-Type", "")
+                            status = resp.status
+                    except Exception as err:  # noqa: BLE001  (DNS errors etc. are just a miss)
+                        lines.append(f"{name:22} {method:4} {shown} -> {type(err).__name__}")
+                        continue
+                    try:
+                        payload: Any = json.loads(text) if text else None
+                    except json.JSONDecodeError:
+                        payload = None
+                    if payload is not None:
+                        info = _body_summary(payload)
+                    else:
+                        title = re.search(r"<title>(.*?)</title>", text, re.I | re.S)
+                        info = f"{ctype or 'no content-type'}, {len(text)} chars"
+                        if title:
+                            info += f", title={title.group(1).strip()[:60]!r}"
+                    lines.append(f"{name:22} {method:4} {shown} -> HTTP {status} {info}")
+                    if status == 405 and method == "GET" and post_ok:
+                        methods.append("POST")
+                    if 200 <= status < 300 and text:
+                        record = {"method": method, "url": shown, "http_status": status, "content_type": ctype}
+                        if payload is not None:
+                            record["response"] = payload
+                        else:
+                            # Non-JSON (probably a web page): keep it out of the shareable dump.
+                            record["response_chars"] = len(text)
+                            raw_text[name] = text
+                        if name not in found or (_failed(found[name].get("response")) and not _failed(payload)):
+                            found[name] = record
+                        hit = hit or (payload is not None and not _failed(payload))
+                    await asyncio.sleep(delay)
+                if hit:
+                    break
+            if hit:
+                break
+    return found, lines, raw_text
+
+
 async def run(args: argparse.Namespace) -> int:
     integration_dir = find_integration_dir(args.integration_dir)
     api_mod = load_api(integration_dir)
@@ -157,6 +270,8 @@ async def run(args: argparse.Namespace) -> int:
 
     results: dict[str, Any] = {}
     errors: list[str] = []
+    probe_lines: list[str] = []
+    probe_raw_text: dict[str, str] = {}
 
     async with aiohttp.ClientSession() as session:
         api = api_mod.HondaLinkAPI(session, email=email, password=password, pin=None, vin=vin)
@@ -201,11 +316,24 @@ async def run(args: argparse.Namespace) -> int:
 
                 await grab("wake_result", wake)
             await grab("dashboard", lambda: api.async_get_dashboard_latest(vin))
+        if args.probe:
+            print("Probing read-only endpoints from the app (--probe), about a minute…")
+            try:
+                found, probe_lines, probe_raw_text = await probe_endpoints(session, api, vin)
+            except Exception as err:  # noqa: BLE001
+                errors.append(f"probe: {type(err).__name__}: {err}")
+                print(f"  FAIL  probe: {type(err).__name__}")
+            else:
+                for name, record in found.items():
+                    results[f"probe_{name}"] = record
+                    print(f"  ok    probe_{name}  (HTTP {record['http_status']} {record['method']} {record['url']})")
+                print(f"  {len(found)} of {len(PROBES)} probed endpoints answered; see probe_summary.txt")
 
     vins_to_hide = {vin} if vin else set()
     all_lines: list[str] = []
     for name, data in results.items():
-        safe = redact(data, vins_to_hide)
+        keep = frozenset({"name"}) if name.removeprefix("probe_") in PROBES_KEEP_NAME and name.startswith("probe_") else frozenset()
+        safe = redact(data, vins_to_hide, keep)
         write_json(out / f"{name}.json", safe)
         all_lines.append(f"# ===== {name} =====")
         all_lines += leaf_lines(safe)
@@ -213,6 +341,13 @@ async def run(args: argparse.Namespace) -> int:
         if args.raw:
             write_json(raw_dir / f"{name}.json", data)
     (out / "fields.txt").write_text("\n".join(all_lines) + "\n", encoding="utf-8")
+    if args.probe:
+        (out / "probe_summary.txt").write_text(
+            "\n".join(str(redact(line, vins_to_hide)) for line in probe_lines) + "\n", encoding="utf-8"
+        )
+        if args.raw:
+            for name, text in probe_raw_text.items():
+                (raw_dir / f"probe_{name}.html").write_text(text, encoding="utf-8")
     if errors:
         (out / "errors.txt").write_text("\n".join(str(redact(e, vins_to_hide)) for e in errors) + "\n", encoding="utf-8")
 
@@ -229,6 +364,8 @@ def main() -> None:
     parser.add_argument("--vin", help="VIN to query (otherwise discovered from your account)")
     parser.add_argument("--wake", action="store_true",
                         help="Ask the car to report fresh data first (same as the Refresh button; pings the car)")
+    parser.add_argument("--probe", action="store_true",
+                        help="Also try read-only endpoints found in the iOS app (no vehicle commands)")
     parser.add_argument("--raw", action="store_true", help="Also write unredacted copies to raw/")
     parser.add_argument("--out", help="Output folder (default: hondalink_dump_<timestamp>)")
     sys.exit(asyncio.run(run(parser.parse_args())))
