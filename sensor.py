@@ -5,28 +5,39 @@ from typing import Any, Callable
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorEntityDescription, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfLength, UnitOfPressure, UnitOfSpeed
+from homeassistant.const import PERCENTAGE, UnitOfLength, UnitOfPressure, UnitOfSpeed, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DATA_COORDINATOR, DOMAIN
 from .entity import HondaLinkEntity
 from .util import (
+    attribute_safe_value,
+    cabin_temperature,
+    cabin_temperature_unit,
+    clean_value,
     find_12v_battery_candidates,
     find_12v_battery_status,
     get_path,
     leaf_paths,
+    maintenance_minder_messages,
+    maintenance_minder_state,
     parse_iso_datetime,
+    remote_engine_status,
+    remote_start_attributes,
     status_body,
     to_float,
     to_int,
 )
+
+TEMPERATURE_UNITS = {"c": UnitOfTemperature.CELSIUS, "f": UnitOfTemperature.FAHRENHEIT}
 
 
 @dataclass(frozen=True, kw_only=True)
 class HondaLinkSensorDescription(SensorEntityDescription):
     value_fn: Callable[[dict[str, Any]], Any]
     attr_fn: Callable[[dict[str, Any]], dict[str, Any]] | None = None
+    unit_fn: Callable[[dict[str, Any]], str | None] | None = None
 
 
 def _tire(path: str):
@@ -68,7 +79,7 @@ SENSORS: tuple[HondaLinkSensorDescription, ...] = (
     HondaLinkSensorDescription(
         key="12v_battery_status",
         translation_key="12v_battery_status",
-        value_fn=find_12v_battery_status,
+        value_fn=lambda body: clean_value(find_12v_battery_status(body)),
         attr_fn=lambda body: {
             "battery_candidates": find_12v_battery_candidates(body),
             "dashboard_keys": sorted(body.keys()),
@@ -118,7 +129,23 @@ SENSORS: tuple[HondaLinkSensorDescription, ...] = (
     HondaLinkSensorDescription(
         key="remote_engine_status",
         translation_key="remote_engine_status",
-        value_fn=lambda body: get_path(body, "remoteEngineStart.vehicleStartEvent.resStatus"),
+        value_fn=remote_engine_status,
+        attr_fn=remote_start_attributes,
+    ),
+    HondaLinkSensorDescription(
+        key="cabin_temperature",
+        translation_key="cabin_temperature",
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=cabin_temperature,
+        unit_fn=lambda body: TEMPERATURE_UNITS.get(cabin_temperature_unit(body)),
+    ),
+    HondaLinkSensorDescription(
+        key="maintenance_minder",
+        translation_key="maintenance_minder",
+        value_fn=maintenance_minder_state,
+        attr_fn=lambda body: {"messages": attribute_safe_value(maintenance_minder_messages(body))},
     ),
     HondaLinkSensorDescription(
         key="last_update",
@@ -144,6 +171,14 @@ class HondaLinkSensor(HondaLinkEntity, SensorEntity):
     @property
     def native_value(self) -> Any:
         return self.entity_description.value_fn(status_body(self.coordinator.data or {}))
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        if self.entity_description.unit_fn is not None:
+            unit = self.entity_description.unit_fn(status_body(self.coordinator.data or {}))
+            if unit is not None:
+                return unit
+        return super().native_unit_of_measurement
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:

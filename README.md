@@ -9,6 +9,24 @@
 
 # HondaLink for Home Assistant
 
+## Fork changes
+
+This fork ([nickwilkie/ha-hondalink](https://github.com/nickwilkie/ha-hondalink)) adapts
+[daviddelahoz/ha-hondalink](https://github.com/daviddelahoz/ha-hondalink) to a 2025 CR-V Hybrid (MY21 telematics). Changes in 0.2.0:
+
+- **Remote engine running** now turns on for the status this car reports after a remote start
+  (`ENGINE START IG RUN`), as well as `ON`. It uses the `running` device class.
+- **Remote engine status** keeps the raw status string and adds `res_start_counter`, `res_time`,
+  `res_requester` and `delay_start_time` attributes.
+- Fields Honda reports as the literal string `unknown` now show as unknown in Home Assistant
+  instead of the word "unknown" (sensors, attributes, and the door/light/lock state helpers).
+- New entities: **Cabin temperature**, **Maintenance Minder** (active codes, or `OK`), and
+  per-door **Front/Rear left/right door unlocked** binary sensors.
+- **Warning lamp on** has an `active_warnings` attribute; the **Location** tracker has `heading`
+  and `gps_time` attributes.
+- Parsing lives in `util.py` with plain `pytest` tests against a redacted CR-V status reply
+  (`python -m pytest tests`).
+
 Unofficial Home Assistant custom integration for HondaLink MY21 telematics vehicles.
 
 This integration uses the HondaLink Android app API flow, observed while debugging the app, to discover vehicles, poll vehicle state, and expose supported remote commands in Home Assistant.
@@ -146,8 +164,13 @@ Enter the VIN manually in the setup form. The integration will still try to fetc
 
 Useful validation commands:
 
-```powershell
-python -m py_compile .\api.py .\config_flow.py
+```bash
+python -m py_compile *.py
+pip install pytest
+python -m pytest tests
 ```
+
+The tests only need `pytest`, not Home Assistant. Run them as `python -m pytest tests`: a bare
+`pytest` from the repo root tries to import the root `__init__.py`, which needs Home Assistant.
 
 HACS and hassfest workflow files are included under `.github/workflows/`.
