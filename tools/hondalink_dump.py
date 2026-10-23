@@ -27,7 +27,7 @@ Usage:
   python3 hondalink_dump.py --integration-dir ... --vin <VIN> --wake
   python3 hondalink_dump.py --integration-dir ... --probe
 
---probe tries 16 read-only endpoints on Honda's servers, using the HTTP method the app
+--probe tries 17 read-only endpoints on Honda's servers, using the HTTP method the app
 uses where it is known. None of them is a vehicle command: nothing reaches the car.
 Paths and methods come from the app, but the host and VIN placement are guesses, so
 expect most attempts to fail; probe_summary.txt shows which ones didn't.
@@ -100,6 +100,7 @@ PROBES: tuple[Probe, ...] = (
     Probe("activity_log", "/REST/NGT/ActivityLog/1.0/"),
     # Inbox: Maintenance Minder, warning and recall messages (deep-dive.md section 5).
     Probe("vehicle_messages", "/REST/NGT/VehicleMessage/Details/1.0/"),
+    Probe("vehicle_messages_query", "/REST/NGT/VehicleMessage/Details/1.0/", vin_style="query"),
     Probe("vehicle_location", "/REST/NGT/VDS/vehicle/location", post_on_405=True),
     Probe("fota_campaigns", "/REST/NGT/FOTAvehiclesGetVincampaigns/1.0"),
     Probe("stolen_vehicle_status", "/REST/NGT/SVLGetStatus/1.0"),
