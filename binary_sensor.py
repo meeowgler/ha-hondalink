@@ -10,12 +10,21 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DATA_COORDINATOR, DOMAIN
 from .entity import HondaLinkEntity
-from .util import any_light_on, any_open_state, get_path, status_body
+from .util import (
+    active_warning_lamps,
+    any_light_on,
+    any_open_state,
+    door_unlocked,
+    remote_engine_running,
+    status_body,
+    warning_lamp_on,
+)
 
 
 @dataclass(frozen=True, kw_only=True)
 class HondaLinkBinarySensorDescription(BinarySensorEntityDescription):
     value_fn: Callable[[dict[str, Any]], bool | None]
+    attr_fn: Callable[[dict[str, Any]], dict[str, Any]] | None = None
 
 
 DOOR_KEYS = ["firstRowDriver", "firstRowPassenger", "secondRowDriver", "secondRowPassenger"]
@@ -57,18 +66,29 @@ BINARY_SENSORS: tuple[HondaLinkBinarySensorDescription, ...] = (
         key="warning_lamp_on",
         translation_key="warning_lamp_on",
         device_class=BinarySensorDeviceClass.PROBLEM,
-        value_fn=lambda body: any(
-            str(message.get("condition", "")).upper() == "ON"
-            for group in get_path(body, "warningLamps.data", []) or []
-            if isinstance(group, dict)
-            for message in group.get("messages", [])
-            if isinstance(message, dict)
-        ),
+        value_fn=warning_lamp_on,
+        attr_fn=lambda body: {"active_warnings": active_warning_lamps(body)},
     ),
     HondaLinkBinarySensorDescription(
         key="remote_engine_running",
         translation_key="remote_engine_running",
-        value_fn=lambda body: str(get_path(body, "remoteEngineStart.vehicleStartEvent.resStatus", "")).upper() == "ON",
+        device_class=BinarySensorDeviceClass.RUNNING,
+        value_fn=remote_engine_running,
+    ),
+    *(
+        HondaLinkBinarySensorDescription(
+            key=f"{position}_door_unlocked",
+            translation_key=f"{position}_door_unlocked",
+            device_class=BinarySensorDeviceClass.LOCK,
+            value_fn=lambda body, door_key=door_key: door_unlocked(body, door_key),
+        )
+        # Driver side is the left side in the US.
+        for position, door_key in (
+            ("front_left", "firstRowDriver"),
+            ("front_right", "firstRowPassenger"),
+            ("rear_left", "secondRowDriver"),
+            ("rear_right", "secondRowPassenger"),
+        )
     ),
 )
 
@@ -88,3 +108,9 @@ class HondaLinkBinarySensor(HondaLinkEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         return self.entity_description.value_fn(status_body(self.coordinator.data or {}))
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        if self.entity_description.attr_fn is None:
+            return None
+        return self.entity_description.attr_fn(status_body(self.coordinator.data or {}))

@@ -56,6 +56,8 @@
       "rear_right_tire_pressure": {"name": "Rear right tire pressure"},
       "vehicle_speed": {"name": "Vehicle speed"},
       "remote_engine_status": {"name": "Remote engine status"},
+      "cabin_temperature": {"name": "Cabin temperature"},
+      "maintenance_minder": {"name": "Maintenance Minder"},
       "last_update": {"name": "Last update"}
     },
     "binary_sensor": {
@@ -65,7 +67,11 @@
       "any_window_open": {"name": "Any window open"},
       "any_light_on": {"name": "Any light on"},
       "warning_lamp_on": {"name": "Warning lamp on"},
-      "remote_engine_running": {"name": "Remote engine running"}
+      "remote_engine_running": {"name": "Remote engine running"},
+      "front_left_door_unlocked": {"name": "Front left door unlocked"},
+      "front_right_door_unlocked": {"name": "Front right door unlocked"},
+      "rear_left_door_unlocked": {"name": "Rear left door unlocked"},
+      "rear_right_door_unlocked": {"name": "Rear right door unlocked"}
     },
     "button": {
       "start_engine": {"name": "Start engine"},
