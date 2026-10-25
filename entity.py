@@ -1,10 +1,26 @@
 from __future__ import annotations
 
+import logging
+
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_VEHICLE_INFO, CONF_VIN, DOMAIN
+from .const import CONF_VEHICLE_INFO, CONF_VIN, DATA_COORDINATOR, DATA_FEATURES, DOMAIN
 from .coordinator import HondaLinkDataUpdateCoordinator
+from .util import entity_supported, status_body
+
+_LOGGER = logging.getLogger(__name__)
+
+
+def entity_wanted(hass: HomeAssistant, entry, key: str) -> bool:
+    """Whether this car supports the entity (see util.ENTITY_REQUIREMENTS)."""
+    data = hass.data[DOMAIN][entry.entry_id]
+    body = status_body(data[DATA_COORDINATOR].data or {})
+    if entity_supported(key, data[DATA_FEATURES], body):
+        return True
+    _LOGGER.debug("Not creating %s: this vehicle doesn't support it", key)
+    return False
 
 
 class HondaLinkEntity(CoordinatorEntity[HondaLinkDataUpdateCoordinator]):

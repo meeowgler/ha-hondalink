@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DATA_COORDINATOR, DOMAIN
-from .entity import HondaLinkEntity
+from .entity import HondaLinkEntity, entity_wanted
 from .util import (
     attribute_safe_value,
     cabin_temperature,
@@ -182,8 +182,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
     async_add_entities(
         [
-            *(HondaLinkSensor(coordinator, entry, description) for description in SENSORS),
-            *(HondaLinkCoordinatorSensor(coordinator, entry, description) for description in COORDINATOR_SENSORS),
+            *(
+                HondaLinkSensor(coordinator, entry, description)
+                for description in SENSORS
+                if entity_wanted(hass, entry, description.key)
+            ),
+            *(
+                HondaLinkCoordinatorSensor(coordinator, entry, description)
+                for description in COORDINATOR_SENSORS
+                if entity_wanted(hass, entry, description.key)
+            ),
         ]
     )
 

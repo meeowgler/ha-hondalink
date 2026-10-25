@@ -1,0 +1,754 @@
+{
+  "VEHICLE": {
+    "VIN": "**REDACTED**",
+    "VINHeader": "**REDACTED**",
+    "DivisionCode": "A",
+    "DivisionName": "Honda",
+    "ModelYear": "2025",
+    "ModelId": "RS6H9SKXW",
+    "ModelCode": "CR-V HYBRID AWD SP TRG",
+    "ModelTypeCode": "KA",
+    "ModelTrimTypeCode": "HYBRID AWD SP TRG",
+    "FactoryCode": "E",
+    "FactoryName": "INDIANA",
+    "ExteriorBaseColorCode": "GE",
+    "ExteriorBaseColorName": "Gray",
+    "ExteriorMarketingColorCode": "Urban Gray Pearl",
+    "ExteriorMarketingColorName": "",
+    "ManufacturingColorCode": "NH-912P",
+    "ModelGroupNameFriendly": "CR-V",
+    "EmbeddedNavi": "Y",
+    "TelematicsFlag": "Y",
+    "TelematicsPlatform": "MY21",
+    "Asset34FrontPath": "https://automobiles.honda.com/-/media/Honda-Automobiles/Vehicles/2025/CR-V/AW/Medium/medium_CR-V_front_CR-VHYBRIDAWDSPTRG_2025_UrbanGrayPearl_RS6H9SKXW_NH-912P.png",
+    "Asset34RearPath": "https://automobiles.honda.com/-/media/Honda-Automobiles/Vehicles/2025/CR-V/AW/Carshot/carshot_CR-V_rear_CR-VHYBRIDAWDSPTRG_2025_UrbanGrayPearl_RS6H9SKXW_NH-912P.png",
+    "CountryCoded": "US",
+    "HeadUnit": "ADA",
+    "TrafficType": "HD",
+    "LargeFrontImage": "https://automobiles.honda.com/-/media/Honda-Automobiles/Vehicles/2025/CR-V/AW/Carshot/carshot_CR-V_front_CR-VHYBRIDAWDSPTRG_2025_UrbanGrayPearl_RS6H9SKXW_NH-912P.png",
+    "Enrollment": "Y",
+    "EnrollmentMethod": "SELF",
+    "TelematicsUnit": "Y",
+    "Ownership": "Y",
+    "Model": {
+      "Feature": [
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Mobile Specific",
+          "FeatureId": "230",
+          "FeatureName": "50066|Maps",
+          "FeatureDisplayName": "Maps",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "5",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Support",
+          "FeatureId": "197",
+          "FeatureName": "Stolen Vehicle Locator",
+          "FeatureDisplayName": "Stolen Vehicle Locator",
+          "FeatureDescription": "Help find your stolen vehicle. The system uses sophisticated technology to assist the authorities with finding your vehicle.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "2",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Key Features",
+          "FeatureId": "153",
+          "FeatureName": "Remote Lock & Unlock",
+          "FeatureDisplayName": "Remote Lock & Unlock",
+          "FeatureDescription": "Remotely lock or unlock the car doors using the app.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "2",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Remote Command",
+          "FeatureId": "154",
+          "FeatureName": "Remote Lock & Unlock",
+          "FeatureDisplayName": "Remote Lock & Unlock",
+          "FeatureDescription": "Remotely lock or unlock the car doors using the app.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "8",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Destination",
+          "FeatureId": "111",
+          "FeatureName": "Favorites",
+          "FeatureDisplayName": "Favorites",
+          "FeatureDescription": "Search and favorite locations to access them in your vehicle.\n(Requires In-Vehicle Navigation System)",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Basic",
+          "FeatureCategoryDesc": "Dashboard",
+          "FeatureId": "234",
+          "FeatureName": "50067|GTC Dashboard K",
+          "FeatureDisplayName": "GTC Dashboard",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "1",
+          "PackageName": "Basic",
+          "FeatureCategoryDesc": "Dashboard",
+          "FeatureId": "235",
+          "FeatureName": "Dashboard K",
+          "FeatureDisplayName": "Dashboard",
+          "FeatureDescription": "Check the mileage, fuel range/level, and oil life right from your app.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "2",
+          "PackageName": "Basic",
+          "FeatureCategoryDesc": "Vehicle Maintenance",
+          "FeatureId": "237",
+          "FeatureName": "Vehicle Notifications K",
+          "FeatureDisplayName": "Vehicle Notifications",
+          "FeatureDescription": "Receive information about warning lamps or maintenance minders for your vehicle.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Destination",
+          "FeatureId": "239",
+          "FeatureName": "50068|Send Destination",
+          "FeatureDisplayName": "Send Destination",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Method",
+              "AttributeValue": "CIG"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Mobile Specific",
+          "FeatureId": "50",
+          "FeatureName": "50059|Guides",
+          "FeatureDisplayName": "Guides",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Vehicle Guides",
+              "AttributeValue": "Yes"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Remote Command",
+          "FeatureId": "11",
+          "FeatureName": "50012|Find My Car",
+          "FeatureDisplayName": "Find My Car",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "CIG"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Subscription",
+          "FeatureId": "12",
+          "FeatureName": "50013|Subscription Mgmt",
+          "FeatureDisplayName": "Subscription Mgmt",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "CIG"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Basic",
+          "FeatureCategoryDesc": "Vehicle Analysis",
+          "FeatureId": "57",
+          "FeatureName": "50103|Vehicle Health Report",
+          "FeatureDisplayName": "Vehicle Health Report",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Enrollment",
+          "FeatureId": "13",
+          "FeatureName": "50014|Enrollment",
+          "FeatureDisplayName": "Enrollment",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Manage Subscription",
+              "AttributeValue": "WebView"
+            },
+            {
+              "AttributeName": "Method",
+              "AttributeValue": "NewSelf,NewDealer"
+            },
+            {
+              "AttributeName": "Ownership Verification",
+              "AttributeValue": "IGON"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Support",
+          "FeatureId": "16",
+          "FeatureName": "50019|Customer Support",
+          "FeatureDisplayName": "Customer Support",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Contact Us",
+              "AttributeValue": "Yes"
+            },
+            {
+              "AttributeName": "FAQ",
+              "AttributeValue": "Yes"
+            },
+            {
+              "AttributeName": "Customer Feedback",
+              "AttributeValue": "Yes"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Support",
+          "FeatureId": "17",
+          "FeatureName": "50020|Roadside Assistance",
+          "FeatureDisplayName": "Roadside Assistance",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "MY21",
+              "AttributeValue": "Yes"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Mobile Specific",
+          "FeatureId": "19",
+          "FeatureName": "50024|Remote Dashboard",
+          "FeatureDisplayName": "Remote Dashboard",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "CIG"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "1",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Key Features",
+          "FeatureId": "160",
+          "FeatureName": "Remote Start & Stop",
+          "FeatureDisplayName": "Remote Start & Stop",
+          "FeatureDescription": "Get comfy by cooling down or warming up your car ahead of time.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "1",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Remote Command",
+          "FeatureId": "161",
+          "FeatureName": "Remote Start & Stop",
+          "FeatureDisplayName": "Remote Start & Stop",
+          "FeatureDescription": "Get comfy by cooling down or warming up your car ahead of time.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "3",
+          "PackageName": "Basic",
+          "FeatureCategoryDesc": "Support",
+          "FeatureId": "164",
+          "FeatureName": "Roadside Assistance",
+          "FeatureDisplayName": "Roadside Assistance",
+          "FeatureDescription": "Get 24-hour help for towing services, jump-start, flat tire, fuel delivery and more while tracking the status of your request. Requested services are available at no cost throughout the vehicle warranty term.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "3",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Key Features",
+          "FeatureId": "120",
+          "FeatureName": "Find My Car",
+          "FeatureDisplayName": "Find My Car",
+          "FeatureDescription": "Never forget where you parked by getting your vehicle location right in the app.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Driver Management",
+          "FeatureId": "1",
+          "FeatureName": "50001|Driver Management",
+          "FeatureDisplayName": "Driver Management",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "View_Eligibility",
+              "AttributeValue": "PRIMARY,SECONDARY"
+            },
+            {
+              "AttributeName": "List of Drivers",
+              "AttributeValue": "PRIMARY,SECONDARY,DRIVER"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "5",
+          "PackageName": "Basic",
+          "FeatureCategoryDesc": "Support",
+          "FeatureId": "200",
+          "FeatureName": "Vehicle Guides",
+          "FeatureDisplayName": "Vehicle Guides",
+          "FeatureDescription": "Access to digital guides such as the owner's manual to learn about your vehicle.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Mobile Specific",
+          "FeatureId": "244",
+          "FeatureName": "50069|Ownership",
+          "FeatureDisplayName": "Ownership",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Method",
+              "AttributeValue": "PreEnrollment"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Subscription",
+          "FeatureId": "2",
+          "FeatureName": "50002|PIN Management",
+          "FeatureDisplayName": "PIN Management",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "PG"
+            },
+            {
+              "AttributeName": "View_Eligibility",
+              "AttributeValue": "PRIMARY"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Basic",
+          "FeatureCategoryDesc": "Mobile Specific",
+          "FeatureId": "245",
+          "FeatureName": "50070|Dashboard Data",
+          "FeatureDisplayName": "Dashboard Data",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "CIG"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Basic",
+          "FeatureCategoryDesc": "Service",
+          "FeatureId": "3",
+          "FeatureName": "50003|Schedule Service",
+          "FeatureDisplayName": "Schedule Service",
+          "FeatureDescription": "Keep your car healthy by scheduling a service with one of our certified dealers.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "3",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Remote Command",
+          "FeatureId": "125",
+          "FeatureName": "Find My Car",
+          "FeatureDisplayName": "Find My Car",
+          "FeatureDescription": "Never forget where you parked by getting your vehicle location right in the app.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Mobile Specific",
+          "FeatureId": "246",
+          "FeatureName": "50071|Window Status",
+          "FeatureDisplayName": "Window Status",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "CIG"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "4",
+          "PackageName": "Basic",
+          "FeatureCategoryDesc": "Vehicle Info",
+          "FeatureId": "203",
+          "FeatureName": "Vehicle Health Report",
+          "FeatureDisplayName": "Vehicle Health Report",
+          "FeatureDescription": "Stay ahead of the curve with monthly reports of your vehicle's status delivered to your inbox.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "VDU",
+          "FeatureId": "247",
+          "FeatureName": "50072|Security",
+          "FeatureDisplayName": "Security",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "VDU",
+          "FeatureId": "248",
+          "FeatureName": "50074|Remote Dashboard",
+          "FeatureDisplayName": "Remote Dashboard",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Mobile Specific",
+          "FeatureId": "6",
+          "FeatureName": "50006|Fuel",
+          "FeatureDisplayName": "Fuel",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Type",
+              "AttributeValue": "Gas"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "VDU",
+          "FeatureId": "249",
+          "FeatureName": "50073|Remote Controls",
+          "FeatureDisplayName": "Remote Controls",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Support",
+          "FeatureId": "7",
+          "FeatureName": "50007|Contact Us",
+          "FeatureDisplayName": "Contact Us",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Customerservice Autocs",
+              "AttributeValue": "Yes"
+            },
+            {
+              "AttributeName": "Client Relations MY21",
+              "AttributeValue": "Yes"
+            },
+            {
+              "AttributeName": "Customerservice Cartech",
+              "AttributeValue": "Yes"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Support",
+          "FeatureId": "8",
+          "FeatureName": "50009|Stolen Vehicle Locator",
+          "FeatureDisplayName": "Stolen Vehicle Locator",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Type",
+              "AttributeValue": "CIG"
+            },
+            {
+              "AttributeName": "View_Eligibility",
+              "AttributeValue": "PRIMARY"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Dashboard",
+          "FeatureId": "21",
+          "FeatureName": "50026|Door & Light Status",
+          "FeatureDisplayName": "Door & Light Status",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "CIG"
+            },
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "CIG"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Remote Command",
+          "FeatureId": "22",
+          "FeatureName": "50028|Personal Data Wipe",
+          "FeatureDisplayName": "Personal Data Wipe",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "View_Eligibility",
+              "AttributeValue": "PRIMARY"
+            },
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "CIG"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Remote Command",
+          "FeatureId": "23",
+          "FeatureName": "50029|Remote Lock & Unlock",
+          "FeatureDisplayName": "Remote Lock & Unlock",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "CIG"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Vehicle Maintenance",
+          "FeatureId": "28",
+          "FeatureName": "50034|Maintenance Minder",
+          "FeatureDisplayName": "Maintenance Minder",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Vehicle Maintenance",
+          "FeatureId": "29",
+          "FeatureName": "50035|Recall Notifications",
+          "FeatureDisplayName": "Recall Notifications",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "4",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Safety",
+          "FeatureId": "173",
+          "FeatureName": "Security Alarm Alert",
+          "FeatureDisplayName": "Security Alarm Alert",
+          "FeatureDescription": "Get notifications when your vehicle alarm has been triggered.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Mobile Specific",
+          "FeatureId": "253",
+          "FeatureName": "50076|Data Collection Settings",
+          "FeatureDisplayName": "50076|Data Collection Settings",
+          "FeatureDescription": "Data Collection Settings",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Type",
+              "AttributeValue": "SA"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "7",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Destination",
+          "FeatureId": "178",
+          "FeatureName": "Send Destination",
+          "FeatureDisplayName": "Send Destination",
+          "FeatureDescription": "Search and send a location from your app to your vehicle's navigation system. \n(Requires In-Vehicle Navigation System)",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "VDU",
+          "FeatureId": "255",
+          "FeatureName": "50078|Master Data Uploads",
+          "FeatureDisplayName": "Master Data Uploads",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "6",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Remote Command",
+          "FeatureId": "139",
+          "FeatureName": "Personal Data Wipe",
+          "FeatureDisplayName": "Personal Data Wipe",
+          "FeatureDescription": "Restore your audio and navigation system to factory defaults with the app.",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Destination",
+          "FeatureId": "30",
+          "FeatureName": "50036|Favorites",
+          "FeatureDisplayName": "Favorites",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Remote Command",
+          "FeatureId": "31",
+          "FeatureName": "50037|Remote Start",
+          "FeatureDisplayName": "Remote Start",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Target System",
+              "AttributeValue": "CIG"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "Remote",
+          "FeatureCategoryDesc": "Safety",
+          "FeatureId": "33",
+          "FeatureName": "50043|Security Alarm Alert",
+          "FeatureDisplayName": "Security Alarm Alert",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Enrollment",
+          "FeatureId": "36",
+          "FeatureName": "50046|Takeover",
+          "FeatureDisplayName": "Takeover",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Method",
+              "AttributeValue": "IGON"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Enrollment",
+          "FeatureId": "38",
+          "FeatureName": "50048|Enrollment - AT&T Hot Spot",
+          "FeatureDisplayName": "Enrollment - AT&T Hot Spot",
+          "FeatureDescription": "",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "1",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Account Features",
+          "FeatureId": "263",
+          "FeatureName": "myQ Connected Garage",
+          "FeatureDisplayName": "myQ Connected Garage",
+          "FeatureDescription": "Control and Monitor your myQ connected devices from anywhere using your vehicle's center display",
+          "FeatureAttributes": []
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Mobile Specific",
+          "FeatureId": "264",
+          "FeatureName": "50080|CarPlay & Android Auto",
+          "FeatureDisplayName": "50080|CarPlay & Android Auto",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Touchscreen",
+              "AttributeValue": "Yes"
+            },
+            {
+              "AttributeName": "Supports GDO",
+              "AttributeValue": "Yes"
+            },
+            {
+              "AttributeName": "CarPlay",
+              "AttributeValue": "Yes"
+            },
+            {
+              "AttributeName": "AndroidAuto",
+              "AttributeValue": "Yes"
+            }
+          ]
+        },
+        {
+          "KeyFeatureOrder": "",
+          "PackageName": "",
+          "FeatureCategoryDesc": "Subscription",
+          "FeatureId": "229",
+          "FeatureName": "50064|Eligible Programs",
+          "FeatureDisplayName": "Eligible Programs",
+          "FeatureDescription": "",
+          "FeatureAttributes": [
+            {
+              "AttributeName": "Program Names",
+              "AttributeValue": "MY21_PPP_DATASHARE"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

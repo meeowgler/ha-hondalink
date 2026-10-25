@@ -447,3 +447,99 @@ def test_recalls_none_open() -> None:
 )
 def test_recalls_unknown(data: dict[str, Any]) -> None:
     assert util.open_recalls(data) is None
+
+
+# 0.4.0: create only the entities the car supports
+
+
+# Every entity key the integration has, by platform.
+ALL_ENTITY_KEYS = {
+    # sensor
+    "fuel_level", "range", "odometer", "oil_life", "12v_battery_status",
+    "front_left_tire_pressure", "front_right_tire_pressure", "rear_left_tire_pressure", "rear_right_tire_pressure",
+    "vehicle_speed", "remote_engine_status", "cabin_temperature", "maintenance_minder", "last_update",
+    "open_recalls", "enrollment_status",
+    # binary_sensor
+    "any_door_open", "hood_open", "trunk_open", "any_window_open", "any_light_on", "warning_lamp_on",
+    "remote_engine_running", "front_left_door_unlocked", "front_right_door_unlocked",
+    "rear_left_door_unlocked", "rear_right_door_unlocked",
+    # button
+    "start_engine", "stop_engine", "horn", "lights", "stop_horn_lights", "refresh",
+    # lock, device_tracker
+    "doors_lock", "location",
+}
+TIRE_KEYS_HA = {"front_left_tire_pressure", "front_right_tire_pressure", "rear_left_tire_pressure", "rear_right_tire_pressure"}
+
+
+def _created(features: set[str] | None, body: dict[str, Any]) -> set[str]:
+    return {key for key in ALL_ENTITY_KEYS if util.entity_supported(key, features, body)}
+
+
+def test_requirements_cover_every_entity() -> None:
+    assert set(util.ENTITY_REQUIREMENTS) == ALL_ENTITY_KEYS
+
+
+def test_feature_ids_fixture() -> None:
+    features = util.feature_ids(load_json("feature_list_2025_crv_hybrid.json"))
+    assert len(features) == 37
+    assert {"50012", "50026", "50029", "50034", "50035", "50037", "50071"} <= features
+    # No tire pressure, remote climate or EV charging on this car.
+    assert not {"50025", "50011", "50030"} & features
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {},
+        {"VEHICLE": {}},
+        {"VEHICLE": {"Model": {"Feature": []}}},  # an empty list would hide everything: treat as unknown
+        {"VEHICLE": {"Model": {"Feature": [{"FeatureName": "Find My Car"}]}}},  # no numeric IDs
+    ],
+)
+def test_feature_ids_unknown(data: dict[str, Any]) -> None:
+    assert util.feature_ids(data) is None
+
+
+def test_feature_ids_single_feature_object() -> None:
+    data = {"VEHICLE": {"Model": {"Feature": {"FeatureName": "50037|Remote Start"}}}}
+    assert util.feature_ids(data) == {"50037"}
+
+
+def test_entities_for_this_car(body, parked_body) -> None:
+    features = util.feature_ids(load_json("feature_list_2025_crv_hybrid.json"))
+    # Tire pressure (no feature 50025) and 12V battery (no such field) go; everything else stays.
+    expected = ALL_ENTITY_KEYS - TIRE_KEYS_HA - {"12v_battery_status"}
+    assert _created(features, body) == expected
+    # The parked reply (cabin temperature "unknown") keeps the same set.
+    assert _created(features, parked_body) == expected
+
+
+def test_unknown_features_create_everything_the_data_has(body) -> None:
+    assert _created(None, body) == ALL_ENTITY_KEYS - {"12v_battery_status"}
+
+
+def test_no_data_creates_everything() -> None:
+    assert _created(None, {}) == ALL_ENTITY_KEYS
+
+
+def test_car_with_tire_pressure_but_no_remote_start(body) -> None:
+    features = (util.feature_ids(load_json("feature_list_2025_crv_hybrid.json")) | {"50025"}) - {"50037"}
+    created = _created(features, body)
+    assert TIRE_KEYS_HA <= created
+    assert not {"start_engine", "stop_engine", "remote_engine_running", "remote_engine_status"} & created
+
+
+def test_data_presence_gates() -> None:
+    body = {"odometer": {"value": "1"}, "timestamp": "x"}
+    created = _created(None, body)
+    assert {"odometer", "last_update", "refresh", "enrollment_status"} <= created
+    assert not {"fuel_level", "range", "oil_life", "cabin_temperature", "vehicle_speed", "location", "warning_lamp_on"} & created
+
+
+def test_12v_battery_created_when_reported() -> None:
+    body = {"odometer": {"value": "1"}, "batteryStatus": {"batteryVoltageStatus": "Normal"}}
+    assert util.entity_supported("12v_battery_status", None, body)
+
+
+def test_unknown_entity_key_is_created() -> None:
+    assert util.entity_supported("something_new", set(), {"odometer": {}})

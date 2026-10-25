@@ -20,6 +20,7 @@ CONF_VEHICLE_INFO = "vehicle_info"
 CONF_SCAN_INTERVAL = "scan_interval"
 CONF_LOCK_COMMAND = "lock_command"
 CONF_UNLOCK_COMMAND = "unlock_command"
+CONF_FEATURES = "features"
 
 DEFAULT_NAME = "HondaLink"
 DEFAULT_COUNTRY = "US"
@@ -61,3 +62,4 @@ RECALLS_URL = "https://content.services.honda.com/recalls/GetRecalls.ashx"
 
 DATA_API = "api"
 DATA_COORDINATOR = "coordinator"
+DATA_FEATURES = "features"

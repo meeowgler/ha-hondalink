@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 import re
-from typing import Any
+from typing import Any, Callable
 
 # Honda sends the literal string "unknown" for fields a car doesn't report.
 UNKNOWN_VALUE = "unknown"
@@ -581,3 +581,91 @@ def open_recalls(data: dict[str, Any]) -> int | None:
     if _recall_record(data) is None:
         return None
     return sum(1 for campaign in recall_campaigns(data) if campaign["open"])
+
+
+# Feature IDs from the vehicle's FeatureList (`FeatureName` is "<id>|<name>"). The app
+# uses the same IDs to decide which screens to show (bundle/dashboard.json in
+# docs/hondalink-protocol has the tile -> FeatureID map).
+FEATURE_FIND_MY_CAR = "50012"  # horn and lights
+FEATURE_TIRE_PRESSURE = "50025"
+FEATURE_DOOR_LIGHT_STATUS = "50026"
+FEATURE_REMOTE_LOCK = "50029"
+FEATURE_MAINTENANCE_MINDER = "50034"
+FEATURE_RECALLS = "50035"
+FEATURE_REMOTE_START = "50037"
+FEATURE_WINDOW_STATUS = "50071"
+
+
+def feature_ids(data: dict[str, Any]) -> set[str] | None:
+    """Numeric feature IDs from a FeatureList reply, or None if it gave no usable list."""
+    features = get_path(data, "VEHICLE.Model.Feature")
+    ids = {
+        name.split("|", 1)[0].strip()
+        for feature in _as_list(features)
+        if isinstance(feature, dict) and isinstance(name := feature.get("FeatureName"), str) and "|" in name
+    }
+    return ids or None
+
+
+def _has(path: str) -> Callable[[dict[str, Any]], bool]:
+    # The field exists in the status reply, even if this time it says "unknown".
+    return lambda body: get_path(body, path) is not None
+
+
+def _reports_12v_battery(body: dict[str, Any]) -> bool:
+    return find_12v_battery_status(body) is not None or bool(find_12v_battery_candidates(body))
+
+
+# Entity key -> (feature ID the car must have, check that the status reply has the data).
+# Either part may be None. Every entity the integration creates must be listed here.
+ENTITY_REQUIREMENTS: dict[str, tuple[str | None, Callable[[dict[str, Any]], bool] | None]] = {
+    "fuel_level": (None, _has("fuelLevel.currentLevel")),
+    "range": (None, _has("fuelLevel.driveRange")),
+    "odometer": (None, _has("odometer")),
+    "oil_life": (None, _has("oilLife")),
+    "12v_battery_status": (None, _reports_12v_battery),
+    "front_left_tire_pressure": (FEATURE_TIRE_PRESSURE, None),
+    "front_right_tire_pressure": (FEATURE_TIRE_PRESSURE, None),
+    "rear_left_tire_pressure": (FEATURE_TIRE_PRESSURE, None),
+    "rear_right_tire_pressure": (FEATURE_TIRE_PRESSURE, None),
+    "vehicle_speed": (None, _has("gpsData.velocity")),
+    "remote_engine_status": (FEATURE_REMOTE_START, None),
+    "cabin_temperature": (None, _has("temperature.cabin")),
+    "maintenance_minder": (FEATURE_MAINTENANCE_MINDER, None),
+    "last_update": (None, None),
+    "open_recalls": (FEATURE_RECALLS, None),
+    "enrollment_status": (None, None),
+    "any_door_open": (FEATURE_DOOR_LIGHT_STATUS, None),
+    "hood_open": (FEATURE_DOOR_LIGHT_STATUS, None),
+    "trunk_open": (FEATURE_DOOR_LIGHT_STATUS, None),
+    "front_left_door_unlocked": (FEATURE_DOOR_LIGHT_STATUS, None),
+    "front_right_door_unlocked": (FEATURE_DOOR_LIGHT_STATUS, None),
+    "rear_left_door_unlocked": (FEATURE_DOOR_LIGHT_STATUS, None),
+    "rear_right_door_unlocked": (FEATURE_DOOR_LIGHT_STATUS, None),
+    "any_light_on": (FEATURE_DOOR_LIGHT_STATUS, None),
+    "any_window_open": (FEATURE_WINDOW_STATUS, None),
+    "warning_lamp_on": (None, _has("warningLamps")),
+    "remote_engine_running": (FEATURE_REMOTE_START, None),
+    "start_engine": (FEATURE_REMOTE_START, None),
+    "stop_engine": (FEATURE_REMOTE_START, None),
+    "horn": (FEATURE_FIND_MY_CAR, None),
+    "lights": (FEATURE_FIND_MY_CAR, None),
+    "stop_horn_lights": (FEATURE_FIND_MY_CAR, None),
+    "refresh": (None, None),
+    "doors_lock": (FEATURE_REMOTE_LOCK, None),
+    "location": (None, _has("gpsData.coordinate")),
+}
+
+
+def entity_supported(key: str, features: set[str] | None, body: dict[str, Any]) -> bool:
+    """Whether to create the entity for this car.
+
+    features is None when the feature list is unknown, and body is empty when there is no
+    status reply yet; in both cases that check is skipped so nothing is hidden by mistake.
+    """
+    feature, present = ENTITY_REQUIREMENTS.get(key, (None, None))
+    if feature is not None and features is not None and feature not in features:
+        return False
+    if present is not None and body and not present(body):
+        return False
+    return True

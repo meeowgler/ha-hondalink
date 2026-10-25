@@ -9,13 +9,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import CONF_VEHICLE_INFO, DATA_COORDINATOR, DOMAIN
-from .entity import HondaLinkEntity
+from .entity import HondaLinkEntity, entity_wanted
 from .util import dms_to_decimal, get_path, gps_attributes, status_body, to_float, vehicle_image_url
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
-    async_add_entities([HondaLinkDeviceTracker(coordinator, entry)])
+    if entity_wanted(hass, entry, "location"):
+        async_add_entities([HondaLinkDeviceTracker(coordinator, entry)])
 
 
 class HondaLinkDeviceTracker(HondaLinkEntity, TrackerEntity):

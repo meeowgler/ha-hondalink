@@ -14,6 +14,16 @@
 This fork ([nickwilkie/ha-hondalink](https://github.com/nickwilkie/ha-hondalink)) adapts
 [daviddelahoz/ha-hondalink](https://github.com/daviddelahoz/ha-hondalink) to a 2025 CR-V Hybrid (MY21 telematics).
 
+Changes in 0.4.0:
+
+- Entities are created only for what the car supports. At setup the integration reads the
+  car's feature list from Honda (the same list the HondaLink app uses to choose its screens)
+  and skips, for example, tire pressure on cars without it. Values with no feature flag, like
+  12V battery status, are created only if the car's status data contains them. If Honda
+  doesn't answer, the last saved list is used; with no list at all, everything is created.
+- After updating, entities your car doesn't support show as "no longer provided" under
+  Settings > Devices & services > Entities. Select them and delete them to tidy up.
+
 Changes in 0.3.0:
 
 - The **Location** tracker shows Honda's photo of your car (model, trim and color) on the map.

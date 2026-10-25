@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DATA_COORDINATOR, DOMAIN
-from .entity import HondaLinkEntity
+from .entity import HondaLinkEntity, entity_wanted
 from .util import (
     active_warning_lamps,
     any_light_on,
@@ -95,7 +95,11 @@ BINARY_SENSORS: tuple[HondaLinkBinarySensorDescription, ...] = (
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
-    async_add_entities(HondaLinkBinarySensor(coordinator, entry, description) for description in BINARY_SENSORS)
+    async_add_entities(
+        HondaLinkBinarySensor(coordinator, entry, description)
+        for description in BINARY_SENSORS
+        if entity_wanted(hass, entry, description.key)
+    )
 
 
 class HondaLinkBinarySensor(HondaLinkEntity, BinarySensorEntity):

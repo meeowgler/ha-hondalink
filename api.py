@@ -230,6 +230,13 @@ class HondaLinkAPI:
             raise HondaLinkError(f"Entitlement request failed: status {data.get('status')!r}")
         return data
 
+    async def async_get_feature_list(self, vin: str | None = None) -> dict[str, Any]:
+        """Features this VIN supports, the list the app uses to decide which screens to show."""
+        vin = vin or self.vin
+        if not vin:
+            raise HondaLinkError("VIN is required")
+        return await self._request_api("GET", f"/REST/NGT/FeatureList/1.0/{vin}")
+
     async def async_get_recalls(self, vin: str | None = None) -> dict[str, Any]:
         """Honda's public recall lookup for the VIN. A separate service: no token is sent."""
         vin = vin or self.vin
