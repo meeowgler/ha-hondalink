@@ -14,6 +14,7 @@ Writes, into ./hondalink_dump_<timestamp>/ :
   probe_<name>.json     only with --probe: read-only endpoints found in the iOS app (see
                         docs/hondalink-protocol/) that answered with JSON
   probe_summary.txt     only with --probe: every URL tried, its HTTP status and what came back
+  probe_errors.json     only with --probe: Honda's JSON error replies, which often say what was wrong
   fields.txt            every leaf field from all of the above as "path = value", easiest to read
   errors.txt            any request that failed, with the error message
 
@@ -69,6 +70,11 @@ SECRET_KEY_PARTS = (
 )
 # Exact match only ("city" would otherwise hit velocity/batteryCapacity, "pin" hits spinner):
 SECRET_KEYS_EXACT = {"pin", "vin", "lat", "lon", "lng", "city", "zip", "state_code", "name"}
+# Seen in the enrollment reply and vehicle record; caught by neither rule above.
+SECRET_KEYS_EXACT |= {
+    "homecity", "mailingcity", "homestate", "mailingstate", "vinheader", "ahmglobalcode",
+    "agreementid", "correlationid", "solddate", "associationdate",
+}
 # Keys that contain a secret-looking part but are safe and useful to keep.
 SAFE_KEYS = {
     "plugstatus", "lightstate", "openstate", "closestate", "lockstate",
@@ -111,7 +117,7 @@ PROBES: tuple[Probe, ...] = (
     Probe("recalls", "https://content.services.honda.com/recalls/GetRecalls.ashx", vin_style="query"),
 )
 # Probes whose "name" fields are feature/campaign names, not people, so worth keeping.
-PROBES_KEEP_NAME = {"feature_list", "feature_list_cbo", "vehicle_entitlement", "fota_campaigns"}
+PROBES_KEEP_NAME = {"feature_list", "feature_list_cbo", "vehicle_entitlement", "fota_campaigns", "telematics_profile"}
 
 
 def load_api(integration_dir: Path):
@@ -203,8 +209,13 @@ def _failed(payload: Any) -> bool:
     return status in ("failure", "failed", "error") or bool((payload.get("Header") or {}).get("ErrorCode"))
 
 
-async def probe_endpoints(session, api, vin: str | None, hosts=None, probes=PROBES, delay: float = 0.3):
-    """Try each read-only endpoint; return ({name: response}, [summary lines], {name: raw text})."""
+async def probe_endpoints(session, api, vin: str | None, hosts=None, probes=PROBES, delay: float = 0.3,
+                          error_replies: dict[str, list[Any]] | None = None):
+    """Try each read-only endpoint; return ({name: response}, [summary lines], {name: raw text}).
+
+    If error_replies is given, JSON replies with an HTTP error status are collected in it,
+    since their error descriptions often say what the endpoint expected.
+    """
     hosts = hosts or PROBE_HOSTS
     found: dict[str, Any] = {}
     raw_text: dict[str, str] = {}
@@ -247,6 +258,10 @@ async def probe_endpoints(session, api, vin: str | None, hosts=None, probes=PROB
                     lines.append(f"{name:22} {method:4} {shown} -> HTTP {status} {info}")
                     if status == 405 and method == "GET" and post_on_405:
                         methods.append("POST")
+                    if status >= 400 and payload is not None and error_replies is not None:
+                        error_replies.setdefault(name, []).append(
+                            {"method": method, "url": shown, "http_status": status, "response": payload}
+                        )
                     if 200 <= status < 300 and text:
                         record = {"method": method, "url": shown, "http_status": status, "content_type": ctype}
                         if payload is not None:
@@ -333,7 +348,10 @@ async def run(args: argparse.Namespace) -> int:
         if args.probe:
             print("Probing read-only endpoints from the app (--probe), about a minute…")
             try:
-                found, probe_lines, probe_raw_text = await probe_endpoints(session, api, vin)
+                error_replies: dict[str, list[Any]] = {}
+                found, probe_lines, probe_raw_text = await probe_endpoints(
+                    session, api, vin, error_replies=error_replies
+                )
             except Exception as err:  # noqa: BLE001
                 errors.append(f"probe: {type(err).__name__}: {err}")
                 print(f"  FAIL  probe: {type(err).__name__}")
@@ -341,6 +359,8 @@ async def run(args: argparse.Namespace) -> int:
                 for name, record in found.items():
                     results[f"probe_{name}"] = record
                     print(f"  ok    probe_{name}  (HTTP {record['http_status']} {record['method']} {record['url']})")
+                if error_replies:
+                    results["probe_errors"] = error_replies
                 print(f"  {len(found)} of {len(PROBES)} probed endpoints answered; see probe_summary.txt")
 
     vins_to_hide = {vin} if vin else set()
