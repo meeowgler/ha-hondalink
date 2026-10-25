@@ -28,7 +28,7 @@ Usage:
   python3 hondalink_dump.py --integration-dir ... --vin <VIN> --wake
   python3 hondalink_dump.py --integration-dir ... --probe
 
---probe tries 17 read-only endpoints on Honda's servers, using the HTTP method the app
+--probe tries 18 read-only endpoints on Honda's servers, using the HTTP method the app
 uses where it is known. None of them is a vehicle command: nothing reaches the car.
 Paths and methods come from the app, but the host and VIN placement are guesses, so
 expect most attempts to fail; probe_summary.txt shows which ones didn't.
@@ -88,6 +88,7 @@ class Probe(NamedTuple):
     method: str = "GET"  # from the app's operation class (COMGet*/COMPost*), deep-dive.md section 7
     post_on_405: bool = False  # method unknown: also try POST if the server refuses GET
     vin_style: str = "path"  # how to add the VIN: "path" (/VIN) or "query" (?vin=VIN)
+    query: str = ""  # extra query string, e.g. a parameter an error reply said was required
 
 
 # Read-only endpoints from the HondaLink iOS app (docs/hondalink-protocol/) that could give
@@ -103,7 +104,8 @@ PROBES: tuple[Probe, ...] = (
     Probe("account_status", "/REST/NGT/CSAccountStatus/1.0"),
     Probe("trip_scores", "/REST/NGT/CVP/TripScores/1.0"),
     Probe("driving_scores", "/REST/NGT/CVP/DrivingScores/1.0"),
-    Probe("activity_log", "/REST/NGT/ActivityLog/1.0/"),
+    # Its error reply: "Required BigDecimal parameter 'maxCount' is not present".
+    Probe("activity_log", "/REST/NGT/ActivityLog/1.0/", query="maxCount=20"),
     # Inbox: Maintenance Minder, warning and recall messages (deep-dive.md section 5).
     Probe("vehicle_messages", "/REST/NGT/VehicleMessage/Details/1.0/"),
     Probe("vehicle_messages_query", "/REST/NGT/VehicleMessage/Details/1.0/", vin_style="query"),
@@ -111,7 +113,10 @@ PROBES: tuple[Probe, ...] = (
     Probe("fota_campaigns", "/REST/NGT/FOTAvehiclesGetVincampaigns/1.0"),
     Probe("stolen_vehicle_status", "/REST/NGT/SVLGetStatus/1.0"),
     Probe("parts_health", "/REST/SPT/VehiclePartsHealth/1.0", post_on_405=True),
-    Probe("garage_devices", "/REST/GDO/devices/1.0"),
+    # Its error reply without a VIN: "Invalid VIN format."
+    Probe("parts_health_query", "/REST/SPT/VehiclePartsHealth/1.0", vin_style="query"),
+    # Not "garage_devices": a name containing "device" gets redacted in probe_errors.json.
+    Probe("garage", "/REST/GDO/devices/1.0"),
     # Honda's public US recall lookup (service maintenanceRecallUs); no login needed.
     # GET ?vin= returns recalls_response.Response.Recall (a POST gets no recall data).
     Probe("recalls", "https://content.services.honda.com/recalls/GetRecalls.ashx", vin_style="query"),
@@ -220,7 +225,7 @@ async def probe_endpoints(session, api, vin: str | None, hosts=None, probes=PROB
     found: dict[str, Any] = {}
     raw_text: dict[str, str] = {}
     lines: list[str] = []
-    for name, path, first_method, post_on_405, vin_style in probes:
+    for name, path, first_method, post_on_405, vin_style, query in probes:
         hit = False
         for host in ("",) if path.startswith("http") else hosts:
             for suffix in ("", vin) if vin else ("",):
@@ -230,6 +235,8 @@ async def probe_endpoints(session, api, vin: str | None, hosts=None, probes=PROB
                     url = f"{host}{path}?vin={suffix}"
                 else:
                     url = f"{host}{path.rstrip('/')}/{suffix}"
+                if query:
+                    url += ("&" if "?" in url else "?") + query
                 shown = url.replace(vin, "{VIN}") if vin else url
                 methods = [first_method]
                 while methods:
