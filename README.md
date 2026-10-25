@@ -12,7 +12,15 @@
 ## Fork changes
 
 This fork ([nickwilkie/ha-hondalink](https://github.com/nickwilkie/ha-hondalink)) adapts
-[daviddelahoz/ha-hondalink](https://github.com/daviddelahoz/ha-hondalink) to a 2025 CR-V Hybrid (MY21 telematics). Changes in 0.2.0:
+[daviddelahoz/ha-hondalink](https://github.com/daviddelahoz/ha-hondalink) to a 2025 CR-V Hybrid (MY21 telematics).
+
+Changes in 0.3.0:
+
+- The **Location** tracker shows Honda's photo of your car (model, trim and color) on the map.
+- New diagnostic **HondaLink enrollment** sensor (e.g. `Active`), checked every 6 hours. If
+  remote commands start failing, this shows whether the HondaLink enrollment has lapsed.
+
+Changes in 0.2.0:
 
 - **Remote engine running** now turns on for the status this car reports after a remote start
   (`ENGINE START IG RUN`), as well as `ON`. It uses the `running` device class.

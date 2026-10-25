@@ -215,6 +215,20 @@ class HondaLinkAPI:
     async def async_get_profile(self, vin: str) -> dict[str, Any]:
         return await self._request_api("GET", f"/REST/NGT/myProfile/1.0/{vin}")
 
+    async def async_get_vehicle_entitlement(self, vin: str | None = None) -> dict[str, Any]:
+        """Enrollment record for the VIN. The reply includes the owner's name and address."""
+        vin = vin or self.vin
+        if not vin:
+            raise HondaLinkError("VIN is required")
+        data = await self._request_api(
+            "POST",
+            "/REST/NGT/Enrollment/VehicleEntitlement/2.0",
+            json_body={"device": vin, "vin": vin},
+        )
+        if _lower_status(data.get("status")) != "success":
+            raise HondaLinkError(f"Entitlement request failed: status {data.get('status')!r}")
+        return data
+
     async def async_get_dashboard_latest(self, vin: str | None = None) -> dict[str, Any]:
         vin = vin or self.vin
         if not vin:

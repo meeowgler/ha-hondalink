@@ -5,7 +5,7 @@ from typing import Any, Callable
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorEntityDescription, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import PERCENTAGE, UnitOfLength, UnitOfPressure, UnitOfSpeed, UnitOfTemperature
+from homeassistant.const import EntityCategory, PERCENTAGE, UnitOfLength, UnitOfPressure, UnitOfSpeed, UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -158,7 +158,12 @@ SENSORS: tuple[HondaLinkSensorDescription, ...] = (
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     coordinator = hass.data[DOMAIN][entry.entry_id][DATA_COORDINATOR]
-    async_add_entities(HondaLinkSensor(coordinator, entry, description) for description in SENSORS)
+    async_add_entities(
+        [
+            *(HondaLinkSensor(coordinator, entry, description) for description in SENSORS),
+            HondaLinkEnrollmentSensor(coordinator, entry),
+        ]
+    )
 
 
 class HondaLinkSensor(HondaLinkEntity, SensorEntity):
@@ -185,3 +190,15 @@ class HondaLinkSensor(HondaLinkEntity, SensorEntity):
         if self.entity_description.attr_fn is None:
             return None
         return self.entity_description.attr_fn(status_body(self.coordinator.data or {}))
+
+
+class HondaLinkEnrollmentSensor(HondaLinkEntity, SensorEntity):
+    _attr_translation_key = "enrollment_status"
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, coordinator, entry: ConfigEntry) -> None:
+        super().__init__(coordinator, entry, "enrollment_status")
+
+    @property
+    def native_value(self) -> str | None:
+        return self.coordinator.enrollment_status

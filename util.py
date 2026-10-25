@@ -501,3 +501,21 @@ def gps_attributes(body: dict[str, Any]) -> dict[str, Any]:
         "heading": to_float(get_path(body, "gpsData.courseHeading")),
         "gps_time": clean_value(get_path(body, "gpsData.dtTime")),
     }
+
+
+def vehicle_image_url(vehicle: dict[str, Any] | None) -> str | None:
+    """Honda's stock photo of the car (model, trim and color) from the vehicle record."""
+    if not isinstance(vehicle, dict):
+        return None
+    for key in ("LargeFrontImage", "Asset34FrontPath"):
+        url = vehicle.get(key)
+        if isinstance(url, str) and url.startswith("https://"):
+            return url
+    return None
+
+
+def enrollment_status(data: dict[str, Any]) -> str | None:
+    """HondaLink enrollment status (e.g. "Active") from a VehicleEntitlement reply."""
+    if str(data.get("status") or "").lower() != "success":
+        return None
+    return clean_value(get_path(status_body(data), "enrollmentStatus"))

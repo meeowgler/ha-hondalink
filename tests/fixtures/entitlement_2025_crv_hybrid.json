@@ -1,0 +1,37 @@
+{
+  "status": "success",
+  "responseBody": {
+    "enrollmentStatus": "Active",
+    "tspProvider": "NGTDealer",
+    "customer": {
+      "firstName": "**REDACTED**",
+      "lastName": "**REDACTED**",
+      "primaryEmail": "**REDACTED**"
+    },
+    "vehicle": {
+      "make": "HONDA",
+      "model": "CR-V HYBRID AWD SP TRG",
+      "modelSeries": "AWDSTRG",
+      "modelYear": "2025",
+      "baseColor": "GRAY",
+      "colorDescription": "URBAN GRAY P",
+      "image": "https://automobiles.honda.com/-/media/Honda-Automobiles/Vehicles/2025/CR-V/AW/Carshot/carshot_CR-V_front_CR-VHYBRIDAWDSPTRG_2025_UrbanGrayPearl_RS6H9SKXW_NH-912P.png"
+    },
+    "trialEligibility": {
+      "eligibilityFlag": false,
+      "ineligibilityReason": "Sign In Period has Ended",
+      "availEarlyBird": false,
+      "minimumTrialEligibleDays": 0,
+      "eligibleProducts": [
+        {
+          "productId": "8",
+          "productName": "Remote",
+          "eligibleDays": null,
+          "eligibleMonths": 3,
+          "eligibleYears": null,
+          "displayName": "3 Month Trial"
+        }
+      ]
+    }
+  }
+}

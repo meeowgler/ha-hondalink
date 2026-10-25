@@ -1,0 +1,198 @@
+{
+  "status": "success",
+  "responseBody": {
+    "timestamp": "2026-10-24T07:28:02+00:00",
+    "doorStatus": {
+      "firstRowDriver": {
+        "openState": "Closed",
+        "lockState": "Lock"
+      },
+      "firstRowPassenger": {
+        "openState": "Closed",
+        "lockState": "Lock"
+      },
+      "secondRowDriver": {
+        "openState": "Closed",
+        "lockState": "Lock"
+      },
+      "secondRowPassenger": {
+        "openState": "Closed",
+        "lockState": "Lock"
+      },
+      "hood": {
+        "openState": "Closed"
+      },
+      "trunk": {
+        "openState": "Closed"
+      }
+    },
+    "lightStatus": {
+      "headlights": {
+        "lightState": "OFF"
+      },
+      "parkingLights": {
+        "lightState": "OFF"
+      },
+      "brightLights": {
+        "lightState": "OFF"
+      },
+      "fogLights": {
+        "lightState": "OFF"
+      },
+      "rearFogLights": {
+        "lightState": "OFF"
+      }
+    },
+    "tireStatus": {
+      "frontRight": {
+        "pressureData": {
+          "value": "unknown",
+          "unit": "kPa"
+        },
+        "warningState": {
+          "value": "unknown"
+        }
+      },
+      "frontLeft": {
+        "pressureData": {
+          "value": "unknown",
+          "unit": "kPa"
+        },
+        "warningState": {
+          "value": "unknown"
+        }
+      },
+      "rearRight": {
+        "pressureData": {
+          "value": "unknown",
+          "unit": "kPa"
+        },
+        "warningState": {
+          "value": "unknown"
+        }
+      },
+      "rearLeft": {
+        "pressureData": {
+          "value": "unknown",
+          "unit": "kPa"
+        },
+        "warningState": {
+          "value": "unknown"
+        }
+      }
+    },
+    "windowStatus": {
+      "frontWindowDR": {
+        "closeState": "Closed"
+      },
+      "frontWindowAS": {
+        "closeState": "Closed"
+      },
+      "rearWindowRR": {
+        "closeState": "Closed"
+      },
+      "rearWindowRL": {
+        "closeState": "Closed"
+      }
+    },
+    "evStatus": {
+      "vehicleInfo": {
+        "soc": {
+          "value": "unknown"
+        },
+        "evRange": {
+          "value": "unknown"
+        },
+        "hydrogenRemaining": {
+          "unit": "%",
+          "value": "unknown"
+        },
+        "totalRange": {
+          "unit": "unknown",
+          "value": "unknown"
+        },
+        "acStatus": {
+          "value": "unknown"
+        },
+        "chargeMode": {
+          "value": "unknown"
+        },
+        "timeToTargetSoc": {
+          "value": "unknown"
+        },
+        "plugStatus": {},
+        "intTemp": {},
+        "igStatus": {
+          "value": "unknown"
+        },
+        "timerTzone": "unknown"
+      }
+    },
+    "odometer": {
+      "value": "4703",
+      "unit": "mile"
+    },
+    "fuelLevel": {
+      "currentLevel": {
+        "value": "57",
+        "unit": "%"
+      },
+      "driveRange": {
+        "value": "239",
+        "unit": "mile"
+      }
+    },
+    "temperature": {
+      "cabin": {
+        "value": "unknown",
+        "unit": "c"
+      }
+    },
+    "warningLamps": {
+      "data": [
+        {
+          "languageCode": "en"
+        }
+      ]
+    },
+    "oilLife": {
+      "value": "80",
+      "unit": "%"
+    },
+    "gpsData": {
+      "coordinate": {
+        "latitude": "**REDACTED**",
+        "longitude": "**REDACTED**",
+        "datum": "wgs84",
+        "format": "dms"
+      },
+      "dtTime": "2026-10-24T07:28:02+00:00",
+      "velocity": {
+        "value": "0.0",
+        "unit": "mile/h"
+      },
+      "courseHeading": "0.0",
+      "accuracy": {
+        "radius": "0.4"
+      }
+    },
+    "maintenanceMinder": {
+      "data": [
+        {
+          "languageCode": "en"
+        }
+      ]
+    },
+    "remoteEngineStart": {
+      "vehicleStartEvent": {
+        "resStartCounter": "1",
+        "resTime": "0",
+        "resRequester": "NO",
+        "resStatus": "OFF"
+      },
+      "delayStart": {
+        "delayStartTime": "unknown"
+      }
+    }
+  }
+}

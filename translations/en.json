@@ -58,7 +58,8 @@
       "remote_engine_status": {"name": "Remote engine status"},
       "cabin_temperature": {"name": "Cabin temperature"},
       "maintenance_minder": {"name": "Maintenance Minder"},
-      "last_update": {"name": "Last update"}
+      "last_update": {"name": "Last update"},
+      "enrollment_status": {"name": "HondaLink enrollment"}
     },
     "binary_sensor": {
       "any_door_open": {"name": "Any door open"},

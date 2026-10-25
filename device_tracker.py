@@ -8,9 +8,9 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DATA_COORDINATOR, DOMAIN
+from .const import CONF_VEHICLE_INFO, DATA_COORDINATOR, DOMAIN
 from .entity import HondaLinkEntity
-from .util import dms_to_decimal, get_path, gps_attributes, status_body, to_float
+from .util import dms_to_decimal, get_path, gps_attributes, status_body, to_float, vehicle_image_url
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
@@ -43,6 +43,10 @@ class HondaLinkDeviceTracker(HondaLinkEntity, TrackerEntity):
         body = status_body(self.coordinator.data or {})
         radius = to_float(get_path(body, "gpsData.accuracy.radius"))
         return int(radius) if radius is not None else None
+
+    @property
+    def entity_picture(self) -> str | None:
+        return vehicle_image_url(self.entry.data.get(CONF_VEHICLE_INFO))
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

@@ -54,6 +54,7 @@ HONDALINK_SYSTEM_ID = "com.honda.hondalink.cv_android"
 HONDA_HEADER_VERSION = "1.0"
 
 UPDATE_INTERVAL = timedelta(minutes=DEFAULT_SCAN_INTERVAL)
+ENROLLMENT_CHECK_INTERVAL = timedelta(hours=6)
 
 DATA_API = "api"
 DATA_COORDINATOR = "coordinator"

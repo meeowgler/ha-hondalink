@@ -319,3 +319,65 @@ def test_gps_attributes(body) -> None:
 
 def test_gps_attributes_missing() -> None:
     assert util.gps_attributes({}) == {"heading": None, "gps_time": None}
+
+
+# 0.3.0: parked car, vehicle picture, enrollment status
+
+
+@pytest.fixture
+def parked_body() -> dict[str, Any]:
+    # A later reply from the same car, parked: no cabin temperature, no recent remote start.
+    return load_body("dashboard_2025_crv_hybrid_parked.json")
+
+
+def load_json(name: str) -> Any:
+    with open(FIXTURES / name, encoding="utf-8") as file:
+        return json.load(file)
+
+
+def test_parked_fixture(parked_body) -> None:
+    assert util.cabin_temperature(parked_body) is None
+    assert util.cabin_temperature_unit(parked_body) == "c"
+    assert util.remote_engine_running(parked_body) is False
+    assert util.remote_start_attributes(parked_body)["res_requester"] == "NO"
+    assert util.remote_start_attributes(parked_body)["res_time"] == "0"
+    assert not _contains_unknown(_all_helper_outputs(parked_body))
+
+
+def test_vehicle_image_url() -> None:
+    vehicle = load_json("vehicle_2025_crv_hybrid.json")
+    url = util.vehicle_image_url(vehicle)
+    assert url == vehicle["LargeFrontImage"]
+    assert url.startswith("https://automobiles.honda.com/")
+
+
+@pytest.mark.parametrize(
+    ("vehicle", "expected"),
+    [
+        ({"Asset34FrontPath": "https://example.com/a.png"}, "https://example.com/a.png"),
+        ({"LargeFrontImage": "", "Asset34FrontPath": "https://example.com/a.png"}, "https://example.com/a.png"),
+        ({"LargeFrontImage": "http://example.com/a.png"}, None),
+        ({"LargeFrontImage": None}, None),
+        ({}, None),
+        (None, None),
+    ],
+)
+def test_vehicle_image_url_edge_cases(vehicle: Any, expected: str | None) -> None:
+    assert util.vehicle_image_url(vehicle) == expected
+
+
+def test_enrollment_status() -> None:
+    assert util.enrollment_status(load_json("entitlement_2025_crv_hybrid.json")) == "Active"
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {},
+        {"status": "failure", "responseBody": {"enrollmentStatus": "Active"}},
+        {"status": "success", "responseBody": {"enrollmentStatus": "unknown"}},
+        {"status": "success", "responseBody": None},
+    ],
+)
+def test_enrollment_status_missing(data: dict[str, Any]) -> None:
+    assert util.enrollment_status(data) is None
