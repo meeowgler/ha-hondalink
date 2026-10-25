@@ -59,7 +59,8 @@
       "cabin_temperature": {"name": "Cabin temperature"},
       "maintenance_minder": {"name": "Maintenance Minder"},
       "last_update": {"name": "Last update"},
-      "enrollment_status": {"name": "HondaLink enrollment"}
+      "enrollment_status": {"name": "HondaLink enrollment"},
+      "open_recalls": {"name": "Open recalls"}
     },
     "binary_sensor": {
       "any_door_open": {"name": "Any door open"},

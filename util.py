@@ -519,3 +519,65 @@ def enrollment_status(data: dict[str, Any]) -> str | None:
     if str(data.get("status") or "").lower() != "success":
         return None
     return clean_value(get_path(status_body(data), "enrollmentStatus"))
+
+
+def _as_list(value: Any) -> list[Any]:
+    if isinstance(value, list):
+        return value
+    return [] if value is None else [value]
+
+
+def _recall_record(data: dict[str, Any]) -> dict[str, Any] | None:
+    response = get_path(data, "response.recalls_response.Response")
+    if not isinstance(response, dict) or str(response.get("error", "")).lower() == "true":
+        return None
+    recall = response.get("Recall")
+    if not isinstance(recall, dict) or recall.get("warning"):
+        # A warning (e.g. "Invalid VIN") means the lookup couldn't check this car.
+        return None
+    return recall
+
+
+def recall_campaigns(data: dict[str, Any]) -> list[dict[str, Any]]:
+    """Campaigns from a GetRecalls.ashx reply, flattened and with readable keys.
+
+    CampaignType and Campaign are each an object when there is one and a list when
+    there are several.
+    """
+    recall = _recall_record(data)
+    if recall is None:
+        return []
+    campaigns: list[dict[str, Any]] = []
+    for campaign_type in _as_list(recall.get("CampaignType")):
+        if not isinstance(campaign_type, dict):
+            continue
+        for campaign in _as_list(campaign_type.get("Campaign")):
+            if not isinstance(campaign, dict):
+                continue
+            status = clean_value(campaign.get("CampaignDispositionStatusDesc"))
+            mfr_status = clean_value(get_path(campaign, "MfrRecallStatus.value"))
+            closed = str(status or "").lower() in ("closed", "complete", "completed") or (
+                "complete" in str(mfr_status or "").lower() and "incomplete" not in str(mfr_status).lower()
+            )
+            campaigns.append(
+                {
+                    "recall_number": clean_value(campaign.get("RecallNumber")),
+                    "campaign_id": clean_value(campaign.get("CampaignID")),
+                    "description": clean_value(campaign.get("CampaignDescription")),
+                    "type": clean_value(campaign.get("CampaignTypeDesc")),
+                    "status": status,
+                    "manufacturer_status": mfr_status,
+                    "start_date": clean_value(campaign.get("CampaignStartDate")),
+                    "safety_risk": clean_value(campaign.get("SafetyRiskDescription")),
+                    "remedy": clean_value(campaign.get("RemedyDescription")),
+                    "open": not closed,
+                }
+            )
+    return campaigns
+
+
+def open_recalls(data: dict[str, Any]) -> int | None:
+    """Number of open recall campaigns, or None if the lookup gave no usable answer."""
+    if _recall_record(data) is None:
+        return None
+    return sum(1 for campaign in recall_campaigns(data) if campaign["open"])

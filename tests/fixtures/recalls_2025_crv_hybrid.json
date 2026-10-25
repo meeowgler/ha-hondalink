@@ -1,0 +1,84 @@
+{
+  "response": {
+    "content": null,
+    "input_parameter": {
+      "request": {
+        "client_info": {
+          "app_id": "[appId]",
+          "echo_input": "1",
+          "server_ip": "[serverIP]",
+          "session_id": "**REDACTED**",
+          "use_secondary_cache": "0",
+          "user_id": "**REDACTED**"
+        },
+        "input": {
+          "optional": {
+            "recall_request": {
+              "vin_request": {
+                "input_parameters": {
+                  "optional": null,
+                  "required": {
+                    "vins": {
+                      "vin": "**REDACTED**"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": {
+            "baseurl": "https://content.services.honda.com/recalls/docs/"
+          }
+        }
+      }
+    },
+    "modelChooser_response": null,
+    "recalls_response": {
+      "Response": {
+        "error": "false",
+        "Recall": {
+          "CampaignType": {
+            "Campaign": {
+              "AgencyType": {
+                "cd": "N",
+                "value": "NHTSA"
+              },
+              "CampaignBulletinID": "26-084",
+              "CampaignDescription": "2023-26 Accord Hyb/CR-V Hyb/FC Tire Repair Kit Recall",
+              "CampaignDispositionStatusCode": "N",
+              "CampaignDispositionStatusDesc": "Open",
+              "CampaignID": "DOV",
+              "CampaignStartDate": "2026-06-05",
+              "CampaignTypeCode": "C",
+              "CampaignTypeDesc": "Safety Recall Campaign",
+              "MfrNotes": null,
+              "MfrRecallStatus": {
+                "cd": "11",
+                "value": "Recall INCOMPLETE"
+              },
+              "RecallDate": "06/04/2026",
+              "RecallDescription": "American Honda Motor Co., Inc. (Honda) is recalling certain 2023-2026 Accord Hybrid, 2025-2026  CR-V FCEV and  2023-2026 CR-V Hybrid vehicles. If the flat tire repair kit is operated with the nozzle improperly connected to the tire valve, pressure may build within the sealant bottle. If the relief valve does not release pressure as designed, excessive pressure may accumulate, potentially causing the bottle cap to detach.",
+              "RecallNumber": "26V-366",
+              "RefreshDate": "10/24/2026",
+              "RemedyDescription": "Parts are available in limited supply. Registered owners of all affected vehicles will be contacted by mail and asked to take their vehicle to an authorized Honda dealer. The dealer will replace the tire repair kit nozzle or sealant bottle.  Owners who have paid to have these repairs completed at their own expense may be eligible for reimbursement. in accord with the recall reimbursement plan on file with NHTSA. For additional questions, owners may contact American Honda's Customer Support & Campaign Center at 1-888-234-2138.",
+              "SafetyRiskDescription": "If the bottle cap detaches, the risk of injury is increased.",
+              "SortOrder": "1"
+            },
+            "cd": "C",
+            "name": "**REDACTED**",
+            "num_campaigns": "1",
+            "sort_order": "1"
+          },
+          "division_cd": "A",
+          "exterior_color_name": "Urban Gray Pearl",
+          "interior_color_name": "Black",
+          "model_group_name": "CR-V",
+          "model_year": "2025",
+          "trans": "Continuously Variable Transmission",
+          "trim": "HYBRID AWD SP TRG",
+          "VIN": "**REDACTED**"
+        }
+      }
+    }
+  }
+}

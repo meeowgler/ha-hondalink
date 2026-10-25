@@ -55,6 +55,9 @@ HONDA_HEADER_VERSION = "1.0"
 
 UPDATE_INTERVAL = timedelta(minutes=DEFAULT_SCAN_INTERVAL)
 ENROLLMENT_CHECK_INTERVAL = timedelta(hours=6)
+RECALL_CHECK_INTERVAL = timedelta(hours=12)
+# Honda's public US recall lookup (no HondaLink login).
+RECALLS_URL = "https://content.services.honda.com/recalls/GetRecalls.ashx"
 
 DATA_API = "api"
 DATA_COORDINATOR = "coordinator"

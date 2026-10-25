@@ -13,8 +13,19 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import HondaLinkAPI, HondaLinkCommandError, HondaLinkError
-from .const import CONF_SCAN_INTERVAL, CONF_VIN, DEFAULT_SCAN_INTERVAL, DOMAIN, ENROLLMENT_CHECK_INTERVAL
-from .util import enrollment_status
+from .const import (
+    CONF_SCAN_INTERVAL,
+    CONF_VIN,
+    DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
+    ENROLLMENT_CHECK_INTERVAL,
+    RECALL_CHECK_INTERVAL,
+)
+from .util import enrollment_status, open_recalls, recall_campaigns
+
+# Errors from the slow side checks (enrollment, recalls). They are logged and the last
+# known value is kept; they never fail the dashboard update.
+_SIDE_CHECK_ERRORS = (HondaLinkError, aiohttp.ClientError, TimeoutError)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +35,9 @@ class HondaLinkDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.api = api
         self.vin = entry.data[CONF_VIN]
         self.enrollment_status: str | None = None
-        self._enrollment_checked_at: float | None = None
+        self.open_recalls: int | None = None
+        self.recalls: list[dict[str, Any]] = []
+        self._checked_at: dict[str, float] = {}
         interval = int(entry.options.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL))
         super().__init__(
             hass,
@@ -39,23 +52,41 @@ class HondaLinkDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except HondaLinkError as err:
             raise UpdateFailed(str(err)) from err
         await self._async_check_enrollment()
+        await self._async_check_recalls()
         return data
 
-    async def _async_check_enrollment(self) -> None:
-        # Slow-changing, so checked every few hours rather than on every poll. A failure
-        # keeps the last known status and never fails the dashboard update.
+    def _due(self, check: str, interval: timedelta) -> bool:
+        # Slow-changing data is checked every few hours rather than on every poll.
         now = time.monotonic()
-        if (
-            self._enrollment_checked_at is not None
-            and now - self._enrollment_checked_at < ENROLLMENT_CHECK_INTERVAL.total_seconds()
-        ):
+        last = self._checked_at.get(check)
+        if last is not None and now - last < interval.total_seconds():
+            return False
+        self._checked_at[check] = now
+        return True
+
+    async def _async_check_enrollment(self) -> None:
+        if not self._due("enrollment", ENROLLMENT_CHECK_INTERVAL):
             return
-        self._enrollment_checked_at = now
         try:
             # Keep only the status: the rest of the reply is the owner's personal details.
             self.enrollment_status = enrollment_status(await self.api.async_get_vehicle_entitlement(self.vin))
-        except (HondaLinkError, aiohttp.ClientError, TimeoutError) as err:
+        except _SIDE_CHECK_ERRORS as err:
             _LOGGER.debug("HondaLink enrollment check failed: %s", err)
+
+    async def _async_check_recalls(self) -> None:
+        if not self._due("recalls", RECALL_CHECK_INTERVAL):
+            return
+        try:
+            data = await self.api.async_get_recalls(self.vin)
+        except _SIDE_CHECK_ERRORS as err:
+            _LOGGER.debug("Honda recall lookup failed: %s", err)
+            return
+        count = open_recalls(data)
+        if count is None:
+            _LOGGER.debug("Honda recall lookup gave no usable answer")
+            return
+        self.open_recalls = count
+        self.recalls = recall_campaigns(data)
 
     async def async_force_refresh(self) -> None:
         try:

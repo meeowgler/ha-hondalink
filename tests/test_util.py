@@ -381,3 +381,69 @@ def test_enrollment_status() -> None:
 )
 def test_enrollment_status_missing(data: dict[str, Any]) -> None:
     assert util.enrollment_status(data) is None
+
+
+# Recalls (Honda's public recall lookup)
+
+
+def _recall_reply(campaign_types: Any, **recall: Any) -> dict[str, Any]:
+    return {"response": {"recalls_response": {"Response": {"error": "false", "Recall": {"CampaignType": campaign_types, **recall}}}}}
+
+
+def _campaign(number: str, disposition: str = "Open", mfr: str = "Recall INCOMPLETE") -> dict[str, Any]:
+    return {
+        "RecallNumber": number,
+        "CampaignID": f"C{number}",
+        "CampaignDescription": f"Recall {number}",
+        "CampaignTypeDesc": "Safety Recall Campaign",
+        "CampaignDispositionStatusDesc": disposition,
+        "MfrRecallStatus": {"cd": "11", "value": mfr},
+        "CampaignStartDate": "2026-06-05",
+    }
+
+
+def test_recalls_fixture() -> None:
+    data = load_json("recalls_2025_crv_hybrid.json")
+    assert util.open_recalls(data) == 1
+    (recall,) = util.recall_campaigns(data)
+    assert recall["recall_number"] == "26V-366"
+    assert recall["campaign_id"] == "DOV"
+    assert recall["description"] == "2023-26 Accord Hyb/CR-V Hyb/FC Tire Repair Kit Recall"
+    assert recall["status"] == "Open"
+    assert recall["manufacturer_status"] == "Recall INCOMPLETE"
+    assert recall["start_date"] == "2026-06-05"
+    assert recall["open"] is True
+    assert recall["safety_risk"].startswith("If the bottle cap detaches")
+    assert recall["remedy"].startswith("Parts are available")
+
+
+def test_recalls_lists_and_closed() -> None:
+    # Several campaign types, each with one campaign or a list of them.
+    data = _recall_reply(
+        [
+            {"cd": "C", "Campaign": [_campaign("1"), _campaign("2", "Closed", "Recall COMPLETE")]},
+            {"cd": "P", "Campaign": _campaign("3")},
+        ]
+    )
+    assert [r["recall_number"] for r in util.recall_campaigns(data)] == ["1", "2", "3"]
+    assert [r["open"] for r in util.recall_campaigns(data)] == [True, False, True]
+    assert util.open_recalls(data) == 2
+
+
+def test_recalls_none_open() -> None:
+    assert util.open_recalls(_recall_reply({"cd": "C", "num_campaigns": "0"})) == 0
+    assert util.recall_campaigns(_recall_reply({"cd": "C", "num_campaigns": "0"})) == []
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        {},
+        {"response": {"recalls_response": None}},
+        {"response": {"recalls_response": {"Response": {"error": "true"}}}},
+        # What the lookup returns for a VIN it doesn't know.
+        _recall_reply({"cd": "C", "num_campaigns": "0"}, warning={"code": "1000", "desc": "Invalid VIN"}),
+    ],
+)
+def test_recalls_unknown(data: dict[str, Any]) -> None:
+    assert util.open_recalls(data) is None

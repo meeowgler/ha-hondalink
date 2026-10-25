@@ -36,6 +36,7 @@ from .const import (
     IDENTITY_BASE,
     LEGACY_LOCK_COMMAND,
     LEGACY_UNLOCK_COMMAND,
+    RECALLS_URL,
 )
 
 _DYNAMIC_BACKEND_ERROR_CODE = "0x01130009"
@@ -228,6 +229,14 @@ class HondaLinkAPI:
         if _lower_status(data.get("status")) != "success":
             raise HondaLinkError(f"Entitlement request failed: status {data.get('status')!r}")
         return data
+
+    async def async_get_recalls(self, vin: str | None = None) -> dict[str, Any]:
+        """Honda's public recall lookup for the VIN. A separate service: no token is sent."""
+        vin = vin or self.vin
+        if not vin:
+            raise HondaLinkError("VIN is required")
+        headers = {"Accept": "application/json", "User-Agent": APP_USER_AGENT}
+        return await self._send("GET", f"{RECALLS_URL}?vin={vin}", headers=headers)
 
     async def async_get_dashboard_latest(self, vin: str | None = None) -> dict[str, Any]:
         vin = vin or self.vin

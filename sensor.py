@@ -44,6 +44,28 @@ def _tire(path: str):
     return lambda body: to_int(get_path(body, f"tireStatus.{path}.pressureData.value"))
 
 
+@dataclass(frozen=True, kw_only=True)
+class HondaLinkCoordinatorSensorDescription(SensorEntityDescription):
+    value_fn: Callable[[Any], Any]
+    attr_fn: Callable[[Any], dict[str, Any]] | None = None
+
+
+COORDINATOR_SENSORS: tuple[HondaLinkCoordinatorSensorDescription, ...] = (
+    HondaLinkCoordinatorSensorDescription(
+        key="open_recalls",
+        translation_key="open_recalls",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda coordinator: coordinator.open_recalls,
+        attr_fn=lambda coordinator: {"recalls": coordinator.recalls},
+    ),
+    HondaLinkCoordinatorSensorDescription(
+        key="enrollment_status",
+        translation_key="enrollment_status",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda coordinator: coordinator.enrollment_status,
+    ),
+)
+
 SENSORS: tuple[HondaLinkSensorDescription, ...] = (
     HondaLinkSensorDescription(
         key="fuel_level",
@@ -161,7 +183,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     async_add_entities(
         [
             *(HondaLinkSensor(coordinator, entry, description) for description in SENSORS),
-            HondaLinkEnrollmentSensor(coordinator, entry),
+            *(HondaLinkCoordinatorSensor(coordinator, entry, description) for description in COORDINATOR_SENSORS),
         ]
     )
 
@@ -192,13 +214,21 @@ class HondaLinkSensor(HondaLinkEntity, SensorEntity):
         return self.entity_description.attr_fn(status_body(self.coordinator.data or {}))
 
 
-class HondaLinkEnrollmentSensor(HondaLinkEntity, SensorEntity):
-    _attr_translation_key = "enrollment_status"
-    _attr_entity_category = EntityCategory.DIAGNOSTIC
+class HondaLinkCoordinatorSensor(HondaLinkEntity, SensorEntity):
+    """Sensor for values the coordinator checks on a slower schedule than the dashboard."""
 
-    def __init__(self, coordinator, entry: ConfigEntry) -> None:
-        super().__init__(coordinator, entry, "enrollment_status")
+    entity_description: HondaLinkCoordinatorSensorDescription
+
+    def __init__(self, coordinator, entry: ConfigEntry, description: HondaLinkCoordinatorSensorDescription) -> None:
+        super().__init__(coordinator, entry, description.key)
+        self.entity_description = description
 
     @property
-    def native_value(self) -> str | None:
-        return self.coordinator.enrollment_status
+    def native_value(self) -> Any:
+        return self.entity_description.value_fn(self.coordinator)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        if self.entity_description.attr_fn is None:
+            return None
+        return self.entity_description.attr_fn(self.coordinator)

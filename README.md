@@ -17,6 +17,9 @@ This fork ([nickwilkie/ha-hondalink](https://github.com/nickwilkie/ha-hondalink)
 Changes in 0.3.0:
 
 - The **Location** tracker shows Honda's photo of your car (model, trim and color) on the map.
+- New **Open recalls** sensor: the number of open recalls for the car from Honda's public
+  recall lookup, checked every 12 hours, with each recall's number, description, status,
+  safety risk and remedy as attributes.
 - New diagnostic **HondaLink enrollment** sensor (e.g. `Active`), checked every 6 hours. If
   remote commands start failing, this shows whether the HondaLink enrollment has lapsed.
 
