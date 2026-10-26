@@ -14,6 +14,12 @@
 This fork ([nickwilkie/ha-hondalink](https://github.com/nickwilkie/ha-hondalink)) adapts
 [daviddelahoz/ha-hondalink](https://github.com/daviddelahoz/ha-hondalink) to a 2025 CR-V Hybrid (MY21 telematics).
 
+Changes in 0.5.0:
+
+- New **Extend remote start** button: adds the second 10 minutes to a running remote start,
+  like the app's extend option. The car allows one extension; after that it must be started
+  with the key before remote start works again.
+
 Changes in 0.4.0:
 
 - Entities are created only for what the car supports. At setup the integration reads the

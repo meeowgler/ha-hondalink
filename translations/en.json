@@ -77,6 +77,7 @@
     },
     "button": {
       "start_engine": {"name": "Start engine"},
+      "extend_engine": {"name": "Extend remote start"},
       "stop_engine": {"name": "Stop engine"},
       "horn": {"name": "Horn"},
       "lights": {"name": "Lights"},

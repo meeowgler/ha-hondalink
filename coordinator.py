@@ -100,6 +100,11 @@ class HondaLinkDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def async_start_engine(self) -> None:
         await self._run_command(self.api.async_start_engine)
 
+    async def async_extend_engine(self) -> None:
+        # The app's "add 10 minutes": the start command with extend set. The car allows one
+        # extension of a running remote start.
+        await self._run_command(lambda: self.api.async_start_engine(extend=True))
+
     async def async_stop_engine(self) -> None:
         await self._run_command(self.api.async_stop_engine)
 

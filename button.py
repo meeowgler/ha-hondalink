@@ -26,6 +26,12 @@ BUTTONS: tuple[HondaLinkButtonDescription, ...] = (
         press_fn=lambda coordinator: coordinator.async_start_engine(),
     ),
     HondaLinkButtonDescription(
+        key="extend_engine",
+        translation_key="extend_engine",
+        icon="mdi:timer-plus-outline",
+        press_fn=lambda coordinator: coordinator.async_extend_engine(),
+    ),
+    HondaLinkButtonDescription(
         key="stop_engine",
         translation_key="stop_engine",
         icon="mdi:engine-off",

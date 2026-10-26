@@ -647,6 +647,7 @@ ENTITY_REQUIREMENTS: dict[str, tuple[str | None, Callable[[dict[str, Any]], bool
     "warning_lamp_on": (None, _has("warningLamps")),
     "remote_engine_running": (FEATURE_REMOTE_START, None),
     "start_engine": (FEATURE_REMOTE_START, None),
+    "extend_engine": (FEATURE_REMOTE_START, None),
     "stop_engine": (FEATURE_REMOTE_START, None),
     "horn": (FEATURE_FIND_MY_CAR, None),
     "lights": (FEATURE_FIND_MY_CAR, None),
